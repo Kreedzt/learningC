@@ -132,5 +132,82 @@
      + printf()使用%f转换float和double
      + %e打印指数计数法的浮点数
      + 十六进制浮点数下: a和A分别代替e和E
-     + %Lf, %
+     + %Lf, %Le或%La: long double(见 ~show_pt.c~)
 
+** 复数和虚数类型
+   - 复数:
+     1. float_Complex: 包含2个float类型的值, 分别表示复数的实部和虚部
+     2. double_Complex
+     3. long double_Complex
+
+   - 虚数:
+     1. float_Imaginary
+     2. double_Imaginary
+     3. long double_Imaginary
+
+** 类型总结
+   - 基本数据类型
+     + 关键字:
+       * int
+       * long
+       * short
+       * unsinged
+       * char
+       * float
+       * double
+       * signed
+       * _Bool
+       * _Complex
+       * _Imaginary
+
+     + 有符号整型:
+       * int: 不小于16位
+       * short 或 short int: 最大的short类型整数 <= 最大的int类型整数. 至少16位
+       * long 或 long int: >= 最大的int类型整数. 至少32位
+       * long long 或 long long int: >= 最大的long类型整数. long long类型至少占
+         64位
+
+       * Tips: 旧DOS系统的PC提供16位的short和int, 32位都可以使用char类型位的long
+
+       * Tips2: Windows95系统提供16位的short以及32位的int和long
+
+     + 无符号整型
+       * unsinged int / unsinged
+       * unsinged long
+       * unsinged short
+
+     + 字符类型
+       * char: 可以增加unsigned, 占用1字节: 通常是8位, 也可以是16位或更大(基本字
+         符集)
+
+     + 布尔类型
+       * 1 - true, 0 - false
+       * _Bool: 无符号int类型
+
+     + 实浮点类型
+       * float: 基本浮点类型, 至少6位有效数字
+       * double: 至少10位和更大的指数
+       * long long: 表示比dobule更多的有效数字和更大的指数
+       
+     + 复数和虚数浮点数(虚数是可选类型, 复数的实部和虚部都基于实浮点类型来构成)
+       * float_Complex
+       * dobule_Complex
+       * long dobule_Complex
+       * float_Imaginary
+       * double_Imaginary
+       * long long_Imaginary
+
+** 类型大小
+   - sizeof(见 ~typesize.c~)
+
+   - Tips: 命名约定
+     #+begin_src c
+       int i_; // 前缀
+       unsigned short us_; // 前缀
+
+       int i_smart;
+       unsigned short us_versmart;
+     #+end_src
+
+** 参数和陷阱
+   - printf错误参数调用(见 ~badcount.c~)
