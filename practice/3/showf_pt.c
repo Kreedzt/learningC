@@ -17,7 +17,7 @@ int main()
     float toobig = 3.4E38 * 100.0f;
     printf("%e\n", toobig); // inf 无限大 -- 上溢
 
-    printf("%e\n", 0.1234E-10 / 10); // 下溢?
+    printf("%e\n", (0.1234E-10) / 10); // 下溢?
 
     printf("%e\n", asin(2)); // nan: 特殊浮点值nan
 
