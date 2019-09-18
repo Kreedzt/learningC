@@ -293,7 +293,7 @@
         int n;
 
         // 跳过2项赋值第三项
-        scanf("%*d %*d %*d", &n);
+        scanf("%*d %*d %d", &n);
       #+end_src
 
 *** printf()的用法提示
