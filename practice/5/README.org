@@ -222,14 +222,89 @@
     #+begin_src c
       pound((int) f); // 把f强制转换为正确的类型
     #+end_src
-    
-
-** 示例程序
-
-** 关键概念
 
 ** 本章小结
+   - 表达式由运算符和运算对象组成
+   - 花括号括起来的一条或多条语句构成了复合语句(或称为块), while语句是一种迭代语
+     句
+   - C语言会自动类型转换:
+     - char和short类型出现在表达式里作为参数(函数原型除外)时, 都会被升级为int类型
+     - float类型类型出现在表达式里作为参数(函数原型除外), 会升级为double类型
+     - 在K&R C(非ANSI C)下, 表达式中的float也会升级为double类型
 
 ** 复习题
+   1. a: 30(见 ~res1.c~)
+      b: 27
+      c: 1, 1
+      d:\ 3, 9
+   
+   2. a: 6(见 ~res2.c~)
+      b: 52
+      c: 0
+      d:\ 13
+
+   3. a: 37.5(见 ~res3.c~)
+      b: 1.5
+      c: 1.5
+      d:\ 1.5
+      e: 37.5
+      f: 35
+
+   4. 列表:
+      - ~int i = 1,~ 逗号应换成分号
+
+   5. 待优化:
+      1) 第一次进入while判断条件时, sec并未初始化
+      2) scanf输出0时, 还是printf打印了出来
+   
+   6. 输出:(见 ~res4.c~)
+      #+begin_src text
+        %s! C is  cool!
+        ! C is  cool!
+        11
+        11
+        12
+        11
+      #+end_src
+
+   7. 输出:(见 ~res5.c~)
+      #+begin_src text
+        SOS:4 4.00
+      #+end_src
+
+   8. 输出:(见 ~res6.c~)
+      #+begin_src text
+           1    2    3    4    5    6    7    8    9   10
+      #+end_src
+
+   9. 见 ~res6.c~
+
+   10. 输出:(见 ~res7.c~)
+       #+begin_src text
+            1   2
+          101
+          102
+          103
+          104
+         stuvw
+       #+end_src
+
+   11. 输出:(见 ~res8.c~)
+       #+begin_src text
+         死循环如下内容:
+         COMPUTER BYTES DOG
+       #+end_src
+
+   12. 见 ~res9.c~
+
+   13. 见 ~res10.c~
 
 ** 编程练习
+   1. 见 ~practice1.c~
+   2. 见 ~practice2.c~
+   3. 见 ~practice3.c~
+   4. 见 ~practice4.c~
+   5. 见 ~practice5.c~
+   6. 见 ~practice6.c~
+   7. 见 ~practice7.c~
+   8. 见 ~practice8.c~
