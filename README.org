@@ -1,3 +1,5 @@
 * C Primer Plus学习笔记
 
   目录对应章节号
+
+  推荐使用 *llvm(clang)* 编译工具包, 提示信息更友好, 但llvm不带标准库, 还需要安装msvc或gcc
