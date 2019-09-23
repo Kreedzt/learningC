@@ -115,3 +115,50 @@
    do while 提供了 *出口条件循环*
 ** 复习题(res目录)
    1. 见 ~res1.c~
+   2. 见 ~res2.c~
+   3. a: ~>5~
+      b: ~scanf("%lf", &doubleVal) == 0~
+      c: ~x == val~
+   4. a: ~scanf("%d", intVal) != 0~
+      b: ~x != val~
+      c: ~x >= 20~
+   5. 见 ~res3.c~
+   6. 见 ~res4.c~
+   7. a: 见 ~res5.c~
+      b: 见 ~res6.c~
+   8. a: 见 ~res7.c~
+      b: 见 ~res8.c~
+      c: 见 ~res9.c~
+      d:\ 见 ~res10.c~
+   9. 见 ~res11.c~
+   10. a: mint
+       b: 10
+       c: double
+       d:\ ii
+   11. 见 ~res12.c~
+   12. - long 类型开头定义;
+       - return 值 long类型;
+   13. 见 ~res13.c~
+   14. 见 ~res14.c~
+
+
+** 编程练习(practice目录)
+   1. 见 ~practice1.c~
+   2. 见 ~practice2.c~
+   3. 见 ~practice3.c~
+   4. 见 ~practice4.c~
+   5. 见 ~practice5.c~
+   6. 见 ~practice6.c~
+   7. 见 ~practice7.c~
+   8. 见 ~practice8.c~
+   9. 见 ~practice8.c~
+   10. 见 ~practice9.c~
+   11. 见 ~practice10.c~
+   12. 见 ~practice11.c~
+   13. 见 ~practice12.c~
+   14. 见 ~practice13.c~
+   15. 见 ~practice14.c~
+   16. 见 ~practice15.c~
+   17. 见 ~practice16.c~
+   18. 见 ~practice17.c~
+       
