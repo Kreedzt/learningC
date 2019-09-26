@@ -41,6 +41,8 @@ int main()
                "limits to quit):\n");
         printf("lower limit: ");
         start = get_long();
+        printf("upper limit: ");
+        stop = get_long();
     }
     
     printf("Done.\n");
