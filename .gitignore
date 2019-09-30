@@ -1,6 +1,7 @@
 *.out
 *.o
 *.exe
+*.gch
 .DS_Store
 
 GPATH
