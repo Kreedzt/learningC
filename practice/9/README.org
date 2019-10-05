@@ -1,3 +1,4 @@
+
 * 第 9 章
 
 ** 复习函数
@@ -357,3 +358,32 @@
       变量不会引起名称冲突.
       函数代用中实际参数称为实参, 形式参数是被调函数中的变量, 实际参数是主调函数
       赋给被调用函数的具体值
+   2. 函数头
+      #+begin_src c
+        // a
+        void donut(int n);
+
+        // b
+        int gear(int a, int b);
+
+        // c
+        int guess();
+
+        // d
+        void stuff_it(double a, double *b);
+      #+end_src
+   3. 函数头
+      #+begin_src c
+        // a
+        char n_to_char(int n);
+
+        // b
+        int digit(double a, int b);
+
+        // c
+        double* which(double *a, double *b);
+
+        // d
+        int random();
+      #+end_src
+   4. 见 ~res1.c~
