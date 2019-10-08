@@ -391,4 +391,9 @@
    6. 见 ~res3.c~
    7. 见 ~res4.c~
    8. 见 ~res5.c~
-   9. 
+   9. 见 ~res6.c~
+
+** 编程练习(practice)
+   1. 见 ~practice1.c~
+   2. 见 ~practice2.c~
+
