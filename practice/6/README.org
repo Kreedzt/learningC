@@ -1,4 +1,4 @@
-* 第 6 章
+* 第 6 章 C 控制语句: 循环
 
 ** 再探 while 循环
    伪代码: pseudocode
@@ -113,7 +113,7 @@
    for 语句特别适用于需要初始化和更新的循环
    使用逗号运算符可以在 for 循环中初始化和更新多个变量.
    do while 提供了 *出口条件循环*
-** 复习题(res目录)
+** 复习题(res 目录)
    1. 见 ~res1.c~
    2. 见 ~res2.c~
    3. a: ~>5~
@@ -137,12 +137,12 @@
        d:\ ii
    11. 见 ~res12.c~
    12. - long 类型开头定义;
-       - return 值 long类型;
+       - return 值 long 类型;
    13. 见 ~res13.c~
    14. 见 ~res14.c~
 
 
-** 编程练习(practice目录)
+** 编程练习(practice 目录)
    1. 见 ~practice1.c~
    2. 见 ~practice2.c~
    3. 见 ~practice3.c~
