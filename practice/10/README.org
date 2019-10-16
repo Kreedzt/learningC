@@ -16,3 +16,47 @@
       int arr[6] = { 0, 0, 0, 0, 212 }; // 传统语法
       int arr[6] = { [5] = 212 }; // C99
     #+end_src
+
+*** 给指定数组元素赋值
+    C 不允许把数组作为一个单元赋给另一个数组, 除初始化意外也不允许使用画括号列表
+    的形式赋值
+    #+begin_src c
+      #define SIZE 5
+
+      int main()
+      {
+          int oxen[SIZE] = { 5, 3, 2, 8 }; // 初始化没问题
+          int yaks[SIZE];
+          yaks = oxen; // 不允许
+
+          yks[SIZE] = OXEN[SIZE]; // 数组下标越界
+          yksp[SIZE] = { 5, 3, 2, 8 } // 不起作用
+    
+          return 0;
+      }
+    #+end_src
+    SIZE - 1 才是数组最终元素下标
+
+*** 指定数组的大小
+    #+begin_src c
+      #define SIZE 4
+      int main()
+      {
+          int arr[SIZE]; // 整数符号常量
+          double lots[144]; // 整数字面常量
+      }
+    #+end_src
+    #+begin_src c
+      int n = 5;
+      int m = 8;
+      float a4[-4]; // 数组大小必须大于0
+      float a5[0]; // 数组大小必须大于0
+      float a5[2.5]; // 数组大小必须是整数
+      float a7[(int)2.5]; // 可以, 已被强制转换为整型常量
+      float a8[n]; // C99之前不允许
+    #+end_src
+
+    C99 支持变长数组(variable-lengtht array), 简称 VLA()C11 放弃了这一创新的举措,
+    把 VLA 设定为可选
+    
+    
