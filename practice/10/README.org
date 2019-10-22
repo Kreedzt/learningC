@@ -348,3 +348,44 @@
        #+end_src
        C++不允许把 ~const~ 指针赋给非 ~const~ 指针, C 中允许, 如果通过 ~p1~ 更改 ~y~, 其
        行为是未定义的
+
+*** 函数和多维数组
+    
+    编写处理二维数组的函数
+    ~for~ 循环
+    声明函数形参:
+    #+begin_src c
+      void somefunction(int (*pt)[4]);
+    #+end_src
+    当且仅当 pt 是一个函数的形式参数时, 可以这样声明:
+    #+begin_src c
+      // 注意: 第一个空括号表明pt是一个指针
+      void somefunction(int pt[][4]);
+    #+end_src
+
+    (见 ~array2d.c~ )注意: ~ar~ 和 ~main()~ 中的 junk 都使用数组表示法. 因为 ar 和
+    junk 的类型相同, 他们都是指向内含 4 个 ~int~ 类型值的数组的指针
+
+    下面的声明不正确:
+    #+begin_src c
+      int sum2(int ar[][], int rows); // 错误的声明
+    #+end_src
+    编译器会把数组表示法转换成指针表示法.
+    例如: ~ar[1]~ 转换成 ~ar + 1~. 编译器对 ~ar + 1~ 求值, 要知道 ~ar~ 所指向的
+    大小
+    
+    也可以在第一对方括号中写上大小, 但是编译器会忽略该值:
+    #+begin_src c
+      int sum2(int ar[3][4], int rows); // 有效声明, 但是3将被忽略
+    #+end_src
+    
+    与使用 ~typedef~ 相比, 这种形式方便的多
+    #+begin_src c
+      typedef int arr4[4]; // arr4是一个内含4个int的数组
+      typedef arr4 arr3x4[3]; // arr3x4 是一个内含3个arr4的数组
+
+      int sum2(arr3x4 ar, int rows); // 与下面的声明相同
+      int sum2(int ar[3][4], int rows); // 与下面的声明相同
+      int sum2(int ar[][4], int rows); // 标准形式
+    #+end_src
+    
