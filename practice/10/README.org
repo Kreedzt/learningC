@@ -389,3 +389,33 @@
       int sum2(int ar[][4], int rows); // 标准形式
     #+end_src
     
+** 变长数组(VLA)
+   要创建一个能处理任意大小二维数组的函数, 比较繁琐(必须把数组作为一维数组传递,
+   然后让函数计算每行的开始处). 而且, 这种方法不好处理 ~FORTRAN~ 的子例程, 这些
+   子例程都允许在函数调用中指定2个维度. 
+
+   C99新增了变长数组(variable-length arry, VLA), 允许使用变量表示数组的维度:
+   #+begin_src c
+     int quarters = 4;
+     int regions = 5;
+   #+end_src
+   变长数组的限制:
+   1. 必须是自动存储类别, 这意味着无论在函数中声明还是作为函数形参声明, 都 *不能
+      使用* ~static~ 或 ~extern~ 存储类别说明符, 而且 *不能在声明中初始化*.
+      该特性在C11作为可选特性
+   2. 变长数组不能改变大小, 变长数组是指创建数组时可以使用变量指定数组的维度
+      #+begin_src c
+        int sum2d(int rows, int cols, int ar[rows][cols]); // 有效, VLA
+        int sum2d(int ar[rows][cols], int rows, int cols); // 错误
+      #+end_src
+      可以省略原型中的形参名, 但是必须使用型号代替省略的维度:
+      #+begin_src c
+        int sum2d(int, int, int ar[*][*]); // VLA, 省略了维度形参名
+      #+end_src
+
+      
+   C99/C11 标准允许在声明变长数组时使用 ~const~ 变量. 所以该数组的定义必须是声明
+   在块中的自动存储类别的数组
+
+   变量数组还允许动态内存分配, 这说明可以在程序运行时指定数组的大小
+      
