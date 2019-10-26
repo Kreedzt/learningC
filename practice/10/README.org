@@ -510,3 +510,40 @@
       
    *注意*: 字符串有一些特殊规则, 这是由于其末尾的空字符串所致. 有了这个空字符,
     不用传递数组的大小, 函数通过检测字符串的末尾也知道在何处停止
+** 复习题
+   1. 见 ~res1.c~
+   2. 4
+   3. ref 地址为数组首元素地址, ref + 1 为指针地址加 1, 指向下一个元素, ++ref 为
+      指针自增, 自增后指针指向下一个元素
+   4. 见 ~res2.c~ 与 ~res3.c~
+   5. 见 ~res4.c~ 与 ~res5.c~
+   6. a. ~*(grid + 22)[56]~
+      b. ~**(grid + 22)~, ~*grid[22]~
+      c. ~**grid~, ~*grid[0]~, ~grid[0][0]~
+   7. a. ~int digit[10]~
+      b. ~float rates[6]~
+      c. ~int mat[3][5]~
+      d. ~int* psa[20]~
+      e. ~char (* mat)[20]~
+   8. a. ~int arr[6] = { 1, 2, 4, 8, 16, 32}~
+      b. ~a[2]~
+      c. ~int arr[100] = { [99] = -1 }~
+      d. ~int arr = { [5] = 101, [10] = 101, [11] = 101, [12] = 101, [13] = 101 }~
+   9. 0 ~ 9
+   10. a. 有效 (见 ~res6.c~)
+       b. 无效(警告)
+       c. 无效(报错)
+       d. 无效(警告)
+       e. 有效
+       f. 无效(报错, 数量不对等)
+       g. 无效(报错, 参数类型不对)
+       h. 有效
+   11. ~int arr[800][600]~
+   12. a. ~int sumd(double* ar, int length)~, ~int sumd(int length, int
+       ar[length])~
+       b. ~int sum2d(short* ar, int rows, int cols)~, ~int sum2d(int rows, int
+       cols, short ar[rows][cols])~
+       c. ~int sum3d(long* ar, int rows, int cols, int level)~, ~int sum3d(int
+       rows, int cols, int level, long ar[rows][cols][level])~
+   13. a. ~show((int []) { 8, 3, 9 }, 3)~
+       b. ~show2((int [2][3]{ { 8, 3, 9 }, { 5, 4, 1 } }, 2)~
