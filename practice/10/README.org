@@ -547,3 +547,6 @@
        rows, int cols, int level, long ar[rows][cols][level])~
    13. a. ~show((int []) { 8, 3, 9 }, 3)~
        b. ~show2((int [2][3]{ { 8, 3, 9 }, { 5, 4, 1 } }, 2)~
+** 编程练习
+   1. ~见 practice1.c~
+   2. 
