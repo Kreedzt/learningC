@@ -548,6 +548,9 @@
    13. a. ~show((int []) { 8, 3, 9 }, 3)~
        b. ~show2((int [2][3]{ { 8, 3, 9 }, { 5, 4, 1 } }, 2)~
 ** 编程练习
-   1. ~见 practice1.c~
-   2. ~见 practice2.c~
-   3. ~见 practice3.c~
+   1. 见 ~practice1.c~
+   2. 见 ~practice2.c~
+   3. 见 ~practice3.c~
+   4. 见 ~practice4.c~
+   5. 见 ~practice5.c~
+   6. 见 ~practice6.c~
