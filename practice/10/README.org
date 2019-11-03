@@ -558,3 +558,7 @@
    8. 见 ~practice8.c~
    9. 见 ~practice9.c~
    10. 见 ~practice10.c~
+   11. 见 ~practice11.c~ (题目有误, 为数组参数)
+   12. 见 ~practice12.c~
+   13. 合并至题 14
+   14. 见 ~practice13.c~

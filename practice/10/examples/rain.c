@@ -38,7 +38,7 @@ int main()
         total += subtot; // 5年的总降水量
     }
 
-    printf("\nThe yearly average is %.1f inched.\n\n", total / YEARS);
+    printf("\nThe yearly average is %.1f inches.\n\n", total / YEARS);
     printf("MONTHLY AVERAGES:\n\n");
     printf("  Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  ");
     printf("  Now Dec\n");
