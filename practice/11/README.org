@@ -431,3 +431,32 @@
 
     ~sprintf()~ 函数获取输入, 并将其格式化为标准形式, 然后把格式化后的字符串储存
     在 ~formal~ 中(见 ~format.c~)
+
+** 其他字符串函数
+   ANSI C库有20多个用于处理字符串的函数
+
+   第五章讨论过, ~size_t~ 类型是 ~sizeof~ 运算符返回的类型. C规定 ~sizeof~ 运算
+   符返回一个整数类型, 但是并未指定是哪种整数类型, 所以 ~size_t~ 在一个系统中可
+   以是 ~unsigned int~, 而在另一个系统中可以是 ~unsigned long~. ~string.h~ 头文
+   件针对特定系统定义了 ~size_t~, 或者参考其他有 size_t定义的头文件
+
+   可以用  ~strchr()~ 代替 ~s_gets()~ (自己定义的函数). 首先, 使用 ~strchr()~ 查
+   找换行符(如果有). 如果该函数发现了换行符, 将返回该换行符的地址, 然后便可用空
+   字符替换该位置上的换行符:
+
+   #+begin_src c
+     char line[80];
+     char* find;
+
+     fgets(line, 80, stdin);
+
+     find = strchr(line, '\n'); // 查找换行符
+
+     // 如果没有找到换行符, 返回 NULL
+     if (find)
+       // 把该处的字符替换为空字符
+       *find = '\0';
+   #+end_src
+
+   如果 ~strchr()~ 未找到换行符, ~fgets()~ 在达到行末尾之前就达到了它能读取的最
+   大字符数. 可以像在 ~s_gets()~ 中那样, 给 if 添加一个 else 来处理这种情况.
