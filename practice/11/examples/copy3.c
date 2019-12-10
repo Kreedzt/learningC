@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     {
       strncpy(qwords[i], temp, TARGSIZE - 1);
       qwords[i][TARGSIZE - 1] = '\0';
-      i++;
+      ++i;
     }
   }
 
@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
     puts(qwords[i]);
   }
 
-  
   return 0;
 }
 

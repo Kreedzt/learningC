@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 
@@ -12,6 +11,7 @@ int main(int argc, char *argv[])
   char qwords[LIM][SIZE];
   char temp[SIZE];
   int i = 0;
+
   printf("Enter %d words beginning with q:\n", LIM);
   while (i < LIM && s_gets(temp, SIZE)) {
     if (temp[0] != 'q')
@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
   
   return 0;
 }
-
 
 char* s_gets(char* st, int n)
 {
