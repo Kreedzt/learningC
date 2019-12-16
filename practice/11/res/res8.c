@@ -1,32 +1,33 @@
 #include <stdio.h>
 
+char* s_gets(char* st, char* end);
+
 int main(int argc, char *argv[])
 {
   // char* input_val;
   char input_val[5];
 
   puts("Enter a number (empty line to quit):");
-  s_gets(input_val, 8);
+  s_gets(&input_val[0], &input_val[4]);
   printf("%s\n", input_val);
   
   return 0;
 }
 
 
-char* s_gets(char* st, int n)
+char* s_gets(char* st, char* end)
 {
   char* ret_val;
-  int i = 0;
-  ret_val = fgets(st, n, stdin);
+  ret_val = fgets(st, end - st + 1, stdin);
 
   if (ret_val)
   {
-    while (st[i] != '\n' && st[i] != '\0') {
-      i++;
+    while (*st != '\n' && *st != '\0') {
+      st++;
     }
 
-    if (st[i] == '\n')
-      st[i] = '\0';
+    if (*st == '\n')
+      *st = '\0';
     else
       while (getchar() != '\n') {
         continue;
