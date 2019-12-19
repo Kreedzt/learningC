@@ -583,3 +583,4 @@
    5. 见 ~practice4.c~
    6. 见 ~practice5.c~
    7. 见 ~practice6.c~
+   8. 见 ~practice7.c~
