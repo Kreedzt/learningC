@@ -1,27 +1,24 @@
 #include <stdio.h>
 #include <string.h>
+#include "s_gets.h"
 
 char* mystrncpy(char* target, char* source, int length);
 
 int main(int argc, char *argv[])
 {
-  char* source1 = "This is source1";
-  char target1[4];
-  char* source2 = "This is source22222";
-  char target2[24];
-  int i;
+  char source[20];
+  char target[20];
 
-  mystrncpy(target1, source1, 3);
-  mystrncpy(target2, source2, 24);
+  while (1) {
+    printf("Input source str:\n");
+    s_gets(source, 20);
+    printf("Input target str:\n");
+    s_gets(target, 20);
 
-  printf("target1 item:\n");
-  for (i = 0; i < 4; ++i) {
-    printf("target1 index:%d : %c\n", i,target1[i]);
-  }
+    mystrncpy(target, source, 20);
 
-  printf("target2 item:\n");
-  for (i = 0; i < 24; ++i) {
-    printf("target2 index:%d : %c\n", i,target2[i]);
+    printf("target:%s\n", target);
+    printf("source:%s\n", source);
   }
   
   return 0;

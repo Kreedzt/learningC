@@ -1,21 +1,28 @@
 #include <stdio.h>
+#include "s_gets.h"
 
 char* string_in(char* src, char* target);
 
 int main(int argc, char *argv[])
 {
-  char* source = "Hello World C language";
-  char* target = "ell";
-  char* res = string_in(source, target);
+  char source[20];
+  char target[20];
+  char* res;
 
-  if (res) {
-    printf("res:%s\n", res);
-  }
+  while (1) {
+    printf("Input source str:\n");
+    s_gets(source, 20);
+    
+    printf("Input target str:\n");
+    s_gets(target, 20);
+    
+    res = string_in(source, target);
 
-  res = string_in(source, "zsx");
-
-  if (!res) {
-    printf("not matched \"zsx\"\n");
+    if (res) {
+      printf("res:%s\n", res);
+    } else {
+      printf("not matched \"zsx\"\n");      
+    }
   }
   
   return 0;

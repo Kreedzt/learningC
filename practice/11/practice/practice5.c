@@ -1,17 +1,33 @@
 #include <stdio.h>
-
-#define LEN 5
+#include "s_gets.h"
 
 int is_within(char ch, char* str);
 
 int main(int argc, char *argv[])
 {
-  char* str = "COPY --from=builder /go/src/github.com/AliyunContainerService/image-syncer/image-syncer ./";
-  char chs[LEN] = {'C', 'Z', 'g', 'k', '0'};
+  char str[20];
   int i;
-  
-  for (i = 0; i < LEN; ++i) {
-    printf("is %c in str: %c\n", chs[i], is_within(chs[i], str) == 1 ? 'T' : 'F');
+  char c;
+
+  while (1) {
+    printf("Input source str:\n");
+
+    s_gets(str, 20);
+
+    if (str[0] == '\n') {
+      break;
+    }
+    printf("Input target character:");
+
+    c = getchar();
+
+    if (is_within(c, str) == 1) {
+      printf("%c is in str\n", c);
+    } else {
+      printf("%c is not in str\n", c);
+    }
+    
+    getchar();
   }
   
   return 0;
