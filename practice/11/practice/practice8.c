@@ -13,6 +13,10 @@ int main(int argc, char *argv[])
 
     s_gets(str, 20);
 
+    if (str[0] == '\n' || str[0] == '\0') {
+      break;
+    }
+
     reverse_str(str);
 
     printf("res: %s\n", str);

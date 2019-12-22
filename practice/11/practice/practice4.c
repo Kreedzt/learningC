@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     s_gets(str, 20);
 
-    if (str[0] == '\n') {
+    if (str[0] == '\n' || str[0] == '\0') {
       break;
     }
     printf("Input target character:");

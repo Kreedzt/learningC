@@ -12,9 +12,15 @@ int main(int argc, char *argv[])
   while (1) {
     printf("Input source str:\n");
     s_gets(source, 20);
+    if (source[0] == '\n' || source[0] == '\0') {
+      break;
+    }
     
     printf("Input target str:\n");
     s_gets(target, 20);
+    if (target[0] == '\n' || target[0] == '\0') {
+      break;
+    }
     
     res = string_in(source, target);
 

@@ -1,16 +1,22 @@
 #include <stdio.h>
 #include "s_gets.h"
 
+int is_empty_line(char* str, int length);
 void del_str_empty_word(char* str, int length);
 
 int main(int argc, char *argv[])
 {
   char str[20];
+  char* res;
 
   while (1) {
     printf("Input source str:\n");
 
     s_gets(str, 20);
+
+    if (str[0] == '\n' || str[0] == '\0') {
+      break;
+    }
 
     del_str_empty_word(str, 20);
 
