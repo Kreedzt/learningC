@@ -1,4 +1,3 @@
-
 * 第 12 章 存储类别, 链接和内存管理
   本章内容:
   如何确定变量的作用域(可见范围)和生命期(可存在时间)
@@ -945,3 +944,180 @@
 
     第二个指针声明用一个变量指定 ~p3~ 所指向数组的大小. 因此, ~p3~ 代表一个指向
     VLA 的指针, 这行代码不能在 C90 标准中运行
+*** 存储类别和动态内存分配
+    可以认为程序把它可用的内存分为 3 部分: 
+    1. 供具有外部链接, 内存链接和无链接的静态变量使用
+    2. 供自动变量使用
+    3. 供动态内存分配
+
+       
+    静态存储类别所用的内存数量在编译时确定, 只要程序还在运行, 就可访问存在该部分
+    的数据. 该类别的变量在程序开始执行时被创建, 在程序结束时被销毁
+
+    自动存储来别的变量在程序进入变量定义所在块时存在, 在程序离开块时消失.
+    因此, 随着程序调用函数和函数结束, 自动变量所用的内存数量也相应地增加和减少.
+    这部分的内存通常作为栈来处理, 这意味着新创建的变量按顺序加入内存, 然后以相反
+    的顺序销毁
+
+    动态分配的内存在调用 ~malloc()~ 或相关函数时存在, 在调用 ~free()~ 后释放. 这
+    部分的内存由程序员管理, 而不是一套规则. 所以内存块可以在一个函数中创建, 在另
+    一个函数中销毁. 正式因为这样, 这部分的内存用于动态内存分配会支离破碎. 也就是
+    说, *未使用的内存块分散在已使用的内存块之间*. *使用动态内存通常比使用栈内存
+    慢*
+
+    程序把静态对象, 自动对象和动态分配的对象储存在不同的区域
+
+    *静态数据(包括字符串字面量)占用一个区域, 自动数据占用另一个区域, 动态分配的
+     数据占用第三个区域(通常被称为内存堆或自由内存)*
+
+** ANSI C 类型限定符
+   C90 新增了 2 个属性: 恒常性(constancy)和易变性(volatility). 这 2 个属性可以分别用
+   关键字 ~const~ 和 ~volatile~ 来声明, 以这 2 个关键字创建的类型是限定类型
+   (qualified type). C99 标准新增了第 3 个限定符: ~restrict~, 用于提高编译器优化.
+   C11 标准新增了第 4 个限定符: ~_Atomic~. C11 提供一个可炫酷, 由 ~stdatomic.h~ 管理,
+   以支持并发程序设计, 而且 ~_Atomic~ 是可选支持项
+
+   C99 为类型限定符增加了一个新属性: 他们现在是幂等的(idempotent)! 这个属性指的
+   是可以在一条声明中多次使用同一个限定符, 多余的限定符将被忽略:
+
+   #+begin_src c
+     const const const int n = 6; // 与 const int n = 6; 相同
+   #+end_src
+
+   可以使用该特性编写如下代码:
+   #+begin_src c
+     typedef const int zip;
+     const zip q = 8;
+   #+end_src
+
+*** const 类型限定符
+    以 ~const~ 关键字声明的对象, 其值不能通过赋值或递增, 递减来修改. 
+    在 ANSI 兼容的编译器中, 以下代码:
+
+    #+begin_src c
+      const int nochange; // 限定nochange的值不能被修改
+      nochange = 12; // 不允许
+   #+end_src
+    
+   编译器会报错.
+
+   可以用 ~const~ 关键字创建不允许修改的数组:
+   #+begin_src c
+     const int days1[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+   #+end_src
+
+**** 在指针和形参声明中使用 ~const~
+      声明普通变量和数组时使用 ~const~ 关键字很简单. 指针复杂一些, 因为要区分是
+      限定指针本身 ~const~ 还是限定指针指向的值为 ~const~
+      
+      1) 方式 1
+      #+begin_src c
+        const float* pf; // pf指向一个float类型的const值
+      #+end_src
+      
+      创建了 ~pf~ *指向的值不能被改变*, 而本身的值可以改变, 例如, 可以设置改指
+      针指向其他 ~cosnt~ 值
+
+      2) 方式 2
+      #+begin_src c
+        float* const pt; // pt是一个const指针
+      #+end_src
+
+      创建的指针 pt *本身的值不能更改*. pt 必须指向同一个地址, 但是他指向的值可以
+      改变
+
+      3) 方式 3
+      #+begin_src c
+        const float* const ptr;
+      #+end_src
+
+      表明 ptr *既不能指向别处, 它指向的值也不能改变*
+
+      4) 方式 4
+      #+begin_src c
+        float const* pfc; // 与 const float* pf相同
+      #+end_src
+
+      说明该指针不能用于改变它所指向的值.
+
+      *简而言之*: ~const~ 放在 ~*~ 左侧任意位置, 限定指针指向的数据不能改变, 放
+      在 ~*~ 右侧, 限定了指针本身不能改变
+
+***** 常见用法
+      声明为函数形参的指针. 例如, 假设有 1 个函数要调用 ~display()~ 显示一个数组的
+      内容. 要把数组名作为实际参数传递给该函数, 但是数组名是一个地址. 该函数可能
+      会更改主调函数中的数据, 但是下面的原型保证了数据不会被更改:
+      #+begin_src c
+        void display(const int array[], int limit);
+      #+end_src
+
+      在函数原型和函数头, 形参声明 ~const int array[]~ 与 ~const int* array~ 相
+      同, 所以该声明表明不能更改 ~array~ 指向的数据
+
+      ANSI C 库遵循这种做法. 如果一个指针仅用于给函数访问值, 应将其声明为一个指向
+      ~const~ 限定类型的指针. 如果要指针更改主调函数中的数据, 就不使用.
+
+      ANSI C 中的 ~strcat()~ 原型如下:
+      #+begin_src c
+        char *strcat(char* restrict s1, const char* restrict s2);
+      #+end_src
+      
+      这更改了第一个字符串, 但是并未更改第二个字符串
+
+**** 对全局数据使用 const
+     使用全局变量是一种冒险的方法, 因为这样做暴露了数据, 程序的任何部分都能更改
+     数据. 如果把数据设为 ~const~, 就可避免这样的危险
+
+     可以创建 ~const~ 变量, ~const~ 数组和 ~const~ 结构
+
+     然而, 在文件间共享 ~const~ 数据要小心. 可以采用 2 个策略:
+     1. 遵循外部变量的常用规则, 即在一个文件中使用定义式声明, 在其他文件中使用引
+        用式声明 (用 ~extern~)
+
+        ~file1.c~: 定义一些外部 ~const~ 变量
+        #+begin_src c
+          const double PI = 3.14159;
+          const char* MONTHS[12] = { "Janary", "February", "March", "April", "May", "June", "July",
+                                     "Augest", "September", "October", "November", "December"};
+        #+end_src
+
+        ~file2.c~: 使用定义在别处的外部 ~const~ 变量
+        #+begin_src c
+          extern const double PI;
+          extern const* MONTHS[];
+        #+end_src
+
+        
+     2. 把 ~const~ 变量放在一个头文件中, 然后在其他文件中包含该头文件:
+
+        ~constant.h~: 定义了一些外部 ~const~ 变量
+        #+begin_src c
+          static const double PI = 3.14159;
+          static const char* MONTHS[12] = { "Janary", "February", "March", "April", "May", "June", "July",
+                                            "Augest", "September", "October", "November", "December"};
+        #+end_src
+        
+        ~file1.c~: 使用定义在别处的外部 ~const~ 变量
+        #+begin_src c
+          #include "constant.h"
+        #+end_src
+
+        ~file2.c~: 使用定义在别处的外部 ~const~ 变量
+        #+begin_src c
+          #include "constant.h"
+        #+end_src
+
+        这种方案 *必须在头文件定义中用关键字 ~static~ 声明全局 ~const~ 变量*. 如
+        果去掉 ~static~, 那么在 ~file1.c~ 和 ~file2.c~ 中包含 ~constant.h~ 将导
+        致每个文件中都有一个相同标识符的定义式声明, C 标准不允许这样做.
+
+        这种方案现相当于给每个文件提供了一个单独的数据副本. 由于每个副本 *只对该
+        文件可见*, 所以无法用这些数据和其他文件通信. 不过因为都是完全相同的
+        ~const~ 数据, 这不是问题.
+
+        头文件的好处是方便偷懒, 不用惦记着一个文件中使用定义式, 其他文件中使用引
+        用式. 所以的文件都只需更包含同一个头文件即可. 但它的缺点是: 数据是重复的.
+        对于前面的例子而言, 这不算什么问题, 但是如果 ~const~ 数据包含庞大的数组,
+        就不能视而不见了
+
+        
