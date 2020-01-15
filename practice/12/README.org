@@ -1,3 +1,4 @@
+
 * 第 12 章 存储类别, 链接和内存管理
   本章内容:
   如何确定变量的作用域(可见范围)和生命期(可存在时间)
@@ -990,7 +991,7 @@
      const zip q = 8;
    #+end_src
 
-*** const 类型限定符
+*** ~const~ 类型限定符
     以 ~const~ 关键字声明的对象, 其值不能通过赋值或递增, 递减来修改. 
     在 ANSI 兼容的编译器中, 以下代码:
 
@@ -1121,7 +1122,7 @@
         就不能视而不见了
 
         
-*** volatile 类型限定符 
+*** ~volatile~ 类型限定符 
     ~volatile~ 限定符告知计算机, 代理(而不是变量所在的程序) 可以改变该变量的值.
     通常, *它被用于硬件地址以及在其他程序或同时运行的线程中共享数据*. 例如, 一个
     地址上可能存储着当前的时钟时间, 无论程序做什么, 地址上的值都能随时间的变化而
@@ -1156,3 +1157,101 @@
       volatile const int loc;
       const volatile int* ploc;
     #+end_src
+*** ~restrict~ 类型限定符
+    ~restrict~ 关键字 *允许编译器优化某部分代码以更好地支持计算*. 它 *只能用于指
+    针*, 表明该指针是访问数据对象的唯一且初始的方式.
+
+**** 指针用法
+     #+begin_src c
+       int ar[10];
+       int* restrict restar = (int*)malloc(sizeof(int) * 10);
+       int* par = ar;
+     #+end_src
+
+     这里: 指针 ~restar~ 是访问由 ~malloc()~ 所分配内存的唯一且初始的方式. 因此,
+     可以用 ~restrict~ 关键字限定它. 而指针 ~par~ 既不是访问 ~ar~ 数组中数据的初
+     始方式, 也不是唯一方式. 所以不用把它设置为 ~restrict~
+
+     考虑下面的代码:
+     #+begin_src c
+       for (n = 0; n < 10; ++n) {
+         par[n] += 5;
+         restar[n] += 5;
+         ar[n] *= 2;
+         par[n] += 3;
+         restar[n] += 3;
+       }
+     #+end_src
+    
+     编译器会对其优化:
+     #+begin_src c
+       restar[n] += 8;
+     #+end_src
+
+     但是 ~par~ 就不能优化, ~par~ 两次访问相同数据之前, 用 ~ar~ 改变了该数据的值
+
+     若未使用 ~restrict~ 关键字, 编译器就不会进行可能出现问题的优化
+
+**** 函数形参用法
+     ~restrict~ 还可用于函数形参中的指针. 这意味着编译器可以假定在函数体内其他标
+     识符不会修改该指针指向的数据, 编译器会对其优化, 使其不做别的用途.
+
+     例如:
+     #+begin_src c
+       void* memcpy(void* restrict s1, const void* restrict s2, size_t n);
+       void* memmove(void* s1, const void* s2, size_t n);
+     #+end_src
+     
+     这 2 个函数都是从位置 s1 把 n 字节拷贝到 s1. ~memcpy()~ 函数要求 2 个位置 *不重叠*
+     , 但是 ~memmove()~ 没有这样的要求. 声明为 ~restrict~ 说明这 2 个指针都是访问
+     相应数据的 *唯一方式*, 所以它们 *不能访问相同块的数据*. 满足了无重叠的要求,
+     ~memmove()~ 函数允许重叠, 使用时可能被覆盖
+
+     ~restrict~ 使用时, 编译器 *不会检查用户是否遵循* 这一限制, 后果自负
+*** ~_Atomic~ 类型限定符(C11)
+    用于并发程序设计(把程序执行分成可以同时执行的多个线程)
+    C11 提供了 *可选* 的头文件: ~stdatomic.h~ 和 ~threads.h~. 
+    *注意*: 要通过各种宏函数来访问 *原子类型*.
+    当一个线程对一个原子类型的对象执行原子操作时, 其他线程 *不能访问该对象*
+
+    #+begin_src c
+      int hogs; // 普通声明
+      hogs = 12; // 普通赋值
+    #+end_src
+
+    #+begin_src c
+      _Atomic int hogs; // hogs是一个原子类型的变量
+      atomic_store(&hogs, 12); // stdatomic.h中的宏
+    #+end_src
+
+    这里在 ~hogs~ 中储存 12 是一个原子过程, 其他线程不能访问 hogs
+
+    注意: 该特性为 *可选特性*, 使用前 *确认编译器要支持这一特性*
+** 旧关键字的新位置
+   C99 允许把类型限定符和存储类别说明符 ~static~ 放在函数原型和函数头的形式参数
+   的初始方括号中. 
+
+   对于类型限定符而言, 这种为现有功能提供了一个替代的语法:
+   旧式声明:
+   #+begin_src c
+     void ofmouth(int* const a1, in* restrict a2, int n); // 旧式
+   #+end_src
+
+   该声明表明 ~a1~ 是一个指向 ~int~ 的 ~const~ 指针, 这意味着不能更改指针本身,
+   可以更改指针指向的数据. 除此之外, 还表明 ~a2~ 是一个 ~restrict~ 指针, 
+
+   等价语法:
+   #+begin_src c
+     void ofmouth(int a1[const], int a2[restrict], int n); // C99
+   #+end_src
+
+   新标准为 ~static~ 引入了一种与以前用法不相关的新语法.
+   ~static~ 除了表明静态存储类别变量的作用域或链接外, 新的用法告知编译器如何使用
+   形式参数:
+
+   #+begin_src c
+     double stick(double ar[static 20]);
+   #+end_src
+
+   以上用法表明: 函数调用中的实际参数应该是一个指向数组首元素的指针, 且该数组至
+   少有 20 个元素. 这种用法的目的是让编译器使用这些信息优化函数的编码.
