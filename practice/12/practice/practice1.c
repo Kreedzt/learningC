@@ -1,39 +1,25 @@
 #include <stdio.h>
 
-char color = 'B';
-
-void first();
-void second();
+void critic(int* units);
 
 int main(int argc, char *argv[])
 {
-  extern char color;
+  int units = 0;
 
-  printf("color in main() is %c\n", color); // B
+  printf("How many pounds to a firkin of butter?\n");
+  scanf("%d", &units);
 
-  first(); // R
+  while (units != 56) {
+    critic(&units);
+  }
 
-  printf("color in main() is %c\n", color); // B
+  printf("You must have looked it up!\n");
 
-  second(); // G
-
-  printf("color in main() is %c\n", color); // G
-  
   return 0;
 }
 
-void first()
+void critic(int* units)
 {
-  char color;
-  color = 'R';
-
-  printf("color in first() is %c\n", color); // R
+  printf("No luck, my friend, Try again.\n");
+  scanf("%d", units);
 }
-
-void second()
-{
-  color = 'G';
-  
-  printf("color in second() is %c\n", color); // G
-}
-
