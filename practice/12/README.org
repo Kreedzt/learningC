@@ -1326,4 +1326,5 @@
 ** 编程练习
    1. 见 ~practice1.c~
    2. 见 ~practice2.c~
+   3. 见 ~practice3.c~
 
