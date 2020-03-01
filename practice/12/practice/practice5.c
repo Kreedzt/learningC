@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 int rand1();
 void srand1();
@@ -35,7 +36,7 @@ void generate_random()
   int i;
   for (i = 0; i < 100; ++i) {
     arr[i] = rand1();
-    next += 1;
+    next = (unsigned int)time(0) + i;
   };
 };
 

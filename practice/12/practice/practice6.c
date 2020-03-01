@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 int rand1();
 void srand1();
@@ -10,6 +11,7 @@ void sort_arr();
 static unsigned long int next = 1; // 种子
 static int arr[1000];
 static int count_arr[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static int random_arr[10];
 
 int main(int argc, char *argv[])
 {
@@ -49,10 +51,11 @@ void generate_random()
   int i;
   for (i = 0; i < 1000; ++i) {
     arr[i] = rand1();
-    if (next % 10 == 0) {
-      next = 1;
+
+    if (i < 10) {
+      random_arr[i] = (unsigned int)time(0) + i;
     }
-    ++next;
+    next = random_arr[i % 10];
   };
 };
 
