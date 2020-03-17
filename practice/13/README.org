@@ -630,7 +630,7 @@
     ~fread()~ 函数返回成功读取项的数量. 
     正常情况下, 该返回值就是 ~nmemb~, 若出现读取错误或读到文件结尾, 该返回值就会
     比 ~nmemb~ 小
-*** ~int feod(FILE* fp)~ 和 ~int ferror(FILE* fp)~ 函数
+*** ~int feof(FILE* fp)~ 和 ~int ferror(FILE* fp)~ 函数
     如果标准输入函数返回 ~EOF~, 则通常表明函数已到达文件结尾. 然而, 出现读取错误
     时, 函数也会返回 ~EOF~.
     
@@ -738,3 +738,7 @@
       2) 与第一种相同
       3) 以 error 形式打印 Hello, name
    9. "r+"
+** 编程练习
+   1. 见 ~practice1.c~
+   2. 见 ~practice2.c~
+   3. 见 ~practice3.c~
