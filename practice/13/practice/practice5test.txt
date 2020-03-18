@@ -1,0 +1,4 @@
+This is target file.
+Ready to be append.
+This is Source file.
+Will append those text to target file.
