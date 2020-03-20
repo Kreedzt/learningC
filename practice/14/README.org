@@ -1,0 +1,263 @@
+* 第 14 章 结构和其他数据形式
+  本章介绍以下内容:
+
+  - 关键字: ~struct~, ~union~, ~typedef~
+  - 运算符: ~.~, ~->~
+
+  - 什么是 C 结构, 如何创建结构模板和结构变量
+
+  - 如何访问结构成本员, 如何编写处理结构的函数
+
+  - 联合和指向函数的指针
+
+  - C 提供了结构变量(~structure variable) 提高表示数据的能力, 可以创造新的格式.
+
+** 示例问题: 创建图书目录
+   打印一份图书目录, 需要打印每本书的信息: 书名, 作者, 出版社, 版权日期, 页数,
+   册数和价格. 其中的一些项目(书名等)可以储存在字符数组中, 其他项目需要一个
+   ~int~ 数组或 ~float~ 数组. 用 7 个不同的数组分别记录每一项比较繁琐, 尤其是想创
+   建多份列表: 不同项目排序等.
+
+   ~book.c~: 该程序示例演示的书目只包含书名, 作者和价格
+
+   该程序创建的结构有 3 个部分, 每个部分都成为成员(member)或子弹(field). 这 3 部分中,
+   一部分储存书名, 一部分储存作者名, 一部分储存价格.
+
+   技巧:
+   1. 为结构简历一个格式或样式
+   2. 声明一个适合该样式的变量
+   3. 访问结构变量的各个部分
+
+** 建立结构声明
+   结构声明(structure declaration)描述了一个结构的组织布局. 声明类似下面这样:
+
+   #+begin_src c
+     struct book {
+       char title[MAXTITL];
+       char author[MAXAUTL];
+       float value;
+     }
+   #+end_src
+
+   该声明描述了 1 个由 2 个字符数组和 1 个 ~float~ 类型变量组成的结构. 该声明 *并未创
+   建市级的数据对象*, 只描述了该对象由什么组成.(有时, 我们把结构声明成为模板, 因
+   为它勾勒出结构是如何储存数据的. *此模板并非 ~C++~ 的模板, ~C++~ 的模板更强大*)
+
+   首先关键字 ~struct~, 它表明跟在其后的是一个结构, 后面是一个可选的标记(该例中
+   是 ~book~), 稍后程序中可以使用该标记引用该结构. 所以,如下代码生效:
+
+   #+begin_src c
+     struct book library;
+   #+end_src
+
+   这把 ~library~ 声明为 一个使用 ~book~ 结构布局的结构变量
+
+   在结构声明中, 用一对花括号括起来的是结构成员列表. 每个成员都用自己的声明来描
+   述. 
+
+   eg: ~title~ 部门是一个内含 ~MAXTITL~ 个元素的 ~char~ 类型数组. 成员可以是任意
+   一种 ~C的数据类型~, 甚至可以是其他结构. 右花括号后面的 *分号声明是必须的*, 表
+   示结构布局定义结束. 可以把这个声明放在所有函数的外部, 也可以是内部.
+
+   结构的标记名是可选的. 但是以该程序示例中的方式建立结构时(一处定义, 另一处定义
+   实际的结构变量), 必须使用标记
+** 定义结构变量
+   结构有 2 层含义, 一层含义是 "结构布局", 告诉编译器如何表示数据, 但是它并未让编
+   译器为数据分配空间. 下一步是创建一个结构变量, 即是结构的另一层含义:
+
+   #+begin_src c
+     struct book library;
+   #+end_src
+
+   编译器执行这行代码便创建了一个结构变量 library. 编译器使用 book 模版为该变量分配
+   空间: 一个内涵 ~MAXTITL~ 个元素的 ~char~ 数组, 一个内含 ~MAXAUTL~ 个元素的
+   ~char~ 数组和一个 ~float~ 类型的变量. 这些存储空间都与一个名称 ~library~ 结合
+   在一起
+
+   在结构变量的声明中, ~struct book~ 所起的作用相当于一般声明中的 ~int~ 或
+   ~float~. 例如, 可以定义 2 个 ~struct book~ 类型的变量, 或者甚至是指向 ~struct
+   book~ 类型结构的指针:
+
+   #+begin_src c
+     struct book doyle, panshin, *ptbook;
+   #+end_src
+
+   结构变量 ~doyle~ 和 ~panshin~ 中都包含 ~title~, ~author~ 和 ~value~ 部分. 指
+   针 ~ptbook~ 可以指向 ~doyle~, ~panshin~ 或任何其他 ~book~ 类型的结构变量. 从
+   本质上看, ~book~ 结构声明创建了一个名为 ~struct book~ 的新类型.
+
+   就计算机而言, 下面的声明:
+
+   #+begin_src c
+     struct book library;
+   #+end_src
+   
+   是以下声明的简化:
+
+   #+begin_src c
+     struct book {
+       char title[MAXTITL];
+       char author[AXAUTL];
+       float value;
+     } library; // 声明右花括号后跟变量名
+   #+end_src
+
+   换言之, 声明结构的过程和定义结构变量的过程可以 *组合成一个步骤*, 组合后的结构
+   声明和结构变量定义不需要使用结构标记:
+
+   #+begin_src c
+     struct
+     {
+       char title[MAXTITL];
+       char author[MAXAUTL];
+       float value;
+     } library;
+   #+end_src
+
+   然而, 如果打算多次使用结构模板, 就要使用代表及的形式; 或者使用 ~typedef~
+
+   这是 *定义结构变量* 的一个方面, 并未初始化结构变量
+*** 初始化结构
+    初始化一个结构变量(ANSI 之前, 不能用自动变量初始化结构, ANSI 之后可以用任意存
+    储类别) 与初始化数组的语法类似:
+
+    #+begin_src c
+      struct book library = {
+        "The Pious Pirate and the Devious Damsel",
+        "Renee Vivotte",
+        1.95
+      };
+    #+end_src
+
+    我们使用在一对花括号中括起来的初始化列表进行初始化, 各初始化项用逗号分隔. 因
+    此, ~title~ 成员可以被初始化为一个字符串, ~value~ 成员可以被初始化为一个数字.
+    
+    *注意*: 初始化结构和类别储存期
+
+    如果初始化静态存储器的变量(如: 静态外部链接, 静态内部链接或静态无链接), 必须
+    使用常量值. 这统一适用于结构. 如果初始化一个静态存储器的结构, 初始化列表中的
+    值必须是常量表达式. 如果是自动存储期, 初始化列表中的值可以不是常量.
+*** 访问结构成员
+    结构类似于一个 "超级数组", 这个超级数组中, 可以是一个元素为 ~char~ 类型, 下
+    一个元素为 ~float~ 类型, 下一个元素为 ~int~ 数组. 可以通过数组下标单独访问数
+    组中的各元素.
+
+    使用 *结构成员运算符*: 点(.) 访问结构中的成员.
+
+    本质上, ~.title~, ~.author~ 和 ~.value~ 的作用相当于 ~book~ 结构的下标.
+
+*** 结构的初始化器
+    C99 和 C11 位结构提供了 *特定初始化器(designated initializer)*, 其语法与数组的
+    指定初始化器类型, 但是, 结构的指定初始化器使用点运算符和成员名(而不是方括号
+    和下标)标识特定的元素.
+
+    eg: 只初始化 ~book~ 结构的 ~value~ 成员:
+    #+begin_src c
+      struct book suprise = { .value = 10.99 };
+    #+end_src
+
+    可以按照任意顺序使用指定初始化器:
+    #+begin_src c
+      struct book gift = {
+        .value = 25.99
+        .author = "Hames Broadfool",
+        .title  = "Rue for the Toad"
+      };
+    #+end_src
+
+    与数组类似, 在指定初始化器后面的普通初始化器, 为指定成员后面的成员提供初始值.
+    另外, *对特定成员的最后一次赋值才是它实际获得的值*
+
+    eg:
+    #+begin_src c
+      struct book gift = {
+        .value = 18.90,
+        .author = "Philionna Pestle",
+        0.25
+      };
+    #+end_src
+
+    新的赋值 ~0.25~ 取代了 ~18.9~.
+** 结构数组
+   ~manybook.c~ 程序创建了一个内涵 100 个结构变量的数组. 由于该数组是自动存储类别
+   的对象, 其中的信息被储存在栈(stack)中. 如此大的数组需要很大一块内存, 这可能会
+   导致一些问题. 如果在运行时出现错误, 可能抱怨栈大小或栈溢出, 编译器可能使用了
+   一个默认大小的栈, 这个栈对于该例而言太小. 要修正这个问题, 可以使用编译器选项
+   设置栈大小为 10000, 以容纳这个结构数组, 或者可以创建静态或外部数组(这样, 编译
+   器就不会把数组放在栈中); 或者可以减少数组大小为 16
+
+
+   Borland C 和浮点数
+
+   如果程序不使用浮点数, 旧式的 Borland C 编译器会尝试使用小版本的 ~scanf()~ 来压
+   缩程序. 然而, *如果在一个结构数组中只有一个浮点值*, 那么编译器(DOS 的 Borland
+   C/C++ 3.1 之前的版本, 不是 Borland C/C++ 4.0) 就无法发现它的存在. 结果, 编译器
+   会生成如下的消息:
+
+   #+begin_src text
+     scanf: floatint point formats not linked
+     Abnormal program termination
+   #+end_src
+
+   一种解决方案是: 在程序汇总添加下面的代码:
+   
+   #+begin_src c
+     #include <math.h>
+
+     double dummy = sin(0.0);
+   #+end_src
+   
+   这段代码强制编译器载入浮点版本的 ~scanf()~
+
+*** 声明结构数组
+    声明结构数组和声明其他类型的数组类似
+
+    #+begin_src c
+      struct book library[MAXBKS];
+    #+end_src
+
+    以上代码把 ~library~ 声明为一个内含 ~MAXBKS~ 个元素的数组. 数组的每个元素都
+    是一个 ~book~ 类型的数组. 因此, ~library[0]~ 是第一个 ~book~ 类型的结构变量.
+    数组名 ~library~ 本身不是结构名, 它是一个数组名, 该数组中的每个元素都是
+    ~struct book~ 类型的结构变量
+
+*** 标识结构数组的成员
+    为了标识结构数组的成员, 可以采用访问单独结构的规则: 在结构名后面加一个点运算
+    符, 再在点运算符后面写上成员名:
+
+    #+begin_src c
+      library[0].value // 第1个数组元素与value相关联
+    #+end_src
+
+    总结:
+
+    #+begin_src c
+      library // 一个book结构的数组
+      library[2] // 一个数组元素, 该元素是book结构
+      library[2].title // 一个char数组(library[2]的title成员)
+      library[2].title[4] // 数组中library[2] 元素的title成员的一个字符
+    #+end_src
+
+*** 程序讨论
+    该程序主要的改动之处是: 插入一个 ~while~ 循环读取多个项
+
+    程序中有如下几行:
+    #+begin_src c
+      while (getchar() != '\n') {
+        continue;
+      }
+    #+end_src
+
+    这段代码弥补了 ~scanf()~ 函数遇到空格和换行符就结束读取的问题. 当用户输入书
+    的价格时, 可能输入如下信息:
+    #+begin_src text
+      12.50[Enter]
+    #+end_src
+
+    其传送的字符序列如下: 
+    #+begin_src text
+      12.50\n
+    #+end_src
+
+    ~scanf()~ 函数接受 1, 2, ., 5 和 0, 但是把 ~\n~ 留在输入序列中. 如果没有清理输
+    入行的代码, 就会把留在输入序列中的换行符当作空行读入
