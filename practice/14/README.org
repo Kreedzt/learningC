@@ -338,3 +338,138 @@
     构的地址. 和数组名不同, 结构名只是其地址的别名
 *** 传递结构
     ~funds3.c~
+*** 其他结构特性
+    现在的 C 允许把一个结构赋值给另一个结构, 但数组不能这样做.
+    #+begin_src c
+      o_data = n_data; // 把一个结构赋值给另一个结构
+    #+end_src
+
+    这条语句把 ~n_data~ 的每个成员的值都赋给 ~o_data~ 的相应成员. 即使成员是数组,
+    也能完成赋值. 还可以把一个结构初始化为相同类型的另一个结构:
+    
+    #+begin_src c
+      struct names right_field = { "Ruthie", "George" };
+      struct names captain = right_field; // 把一个结构初始化为另一个结构
+    #+end_src
+
+    现在的 C(包括 ANSI C), 函数不仅能把结构本身作为参数传递, 还能 *把结构作为返回
+    值返回*. 把结构作为函数参数可以把结构的信息传送给函数; 把结构作为返回值的函
+    数能把结果的信息从被调函数传回主调函数. *结构指针也允许这种双向通信*.
+
+    ~names1.c~ 演示以传递 *指针* 的方式处理结构
+    该程序把任务分配给 3 个函数来完成, 都在 ~main()~ 中调用. 每调用一个函数就把
+    ~person~ 结构的地址传递给它
+
+    - ~getinfo()~ 函数把结构的信息从自身传递给 ~main()~. 通过与用户交互赋值
+
+    - ~makeinfo()~ 函数使用双向传输方式传送信息. 通过使用指针定位结构中的数据
+
+    - ~showinfo()~ 函数不改变数组的内容, 所以声明为 ~const~
+
+    ~names2.c~: 使用结构参数和返回值来完成相同的任务.
+
+    程序中的 *每个函数都创建了自己的 ~peron~ 备份*, 所以该程序使用了 4 个不同的结
+    构
+
+    所以, ~makeinfo()~ 的修改后 *必须返回*
+*** 结构和结构指针的选择
+    把指针作为参数: 
+    优点: 执行起来更快, 缺点: 无法保护数据. 被调函数中的某些操作可能会意外影响原
+    来结构中的数据
+
+    把结构作为参数:
+    函数处理的原始数据的副本, 这保护了原始数据. 代码风格也更清楚, *较老版本* 的
+    实现可能无法处理, 而且结构浪费时间和存储空间. 
+
+    通常: 为了追求效率会使用结构指针作为参数, 如需防止原始数据被意外修改, 应使用
+    ~const~ 限定符. 按值传递结构是处理小型结构的最常用的方法
+
+*** 结构中的字符数组和字符指针
+    是否可以使用指向 ~char~ 的指针来代替字符数组
+    #+begin_src c
+      #define LEN 20
+
+      struct names
+      {
+        char first[LEN];
+        char last[LEN];
+      };
+    #+end_src
+
+    改为:
+    #+begin_src c
+      struct pnames
+      {
+        char* fist;
+        char* last;
+      };
+    #+end_src
+
+    #+begin_src c
+      struct names veep = { "Talia", "Summers" };
+      struct pnames treas = { "Brad", "Fallingjaw" };
+
+      printf("%s and %s\n", veep.first, treas.first);
+    #+end_src
+
+    可行, 但是会有麻烦, ~pnames~ 类型的结构变量 ~treas~ 储存在编译器储存 *常量*
+    的地方. ~pnames~ 结构不用为字符串分配任何存储空间. 指针应该只用来在程序中管
+    理那些已分配和在别处分配的字符串.
+
+    #+begin_src c
+      struct names accountant;
+      struct pnames attorney;
+
+      puts("Enter the last name of your accountant:");
+      scanf("%s", accountant.last);
+
+      puts("Enter the last name of your attorney:");
+      scanf("%s", attorney.last); // 潜在危险
+    #+end_src
+
+    对于 ~attorney~, ~scanf()~ 把字符串放到 ~last~ 的地址上. 这是 *未经初始化的
+    变量*, 地址可以是 *任何值*.
+
+    误用 ~char~ 指针会 *导致严重问题*
+    
+*** 结构, 指针和 ~malloc()~
+    如果使用 ~malloc()~ 分配内存并使用指针储存的地址, 那么在结构中使用指针处理字
+    符串就比较合理. 这种方法的优点是: 可以请求 ~malloc()~ 为字符串分配合适的存储
+    空间. 可以要求用 4 字节储存 "Joe" 和 18 字节储存 "Rasolofomasoandro".
+
+    新的结构声明如下:
+    #+begin_src c
+      struct namect
+      {
+        char* fname; // 用指针代替数组
+        char* lname;
+        int letters;
+      };
+    #+end_src
+
+    新版本的 ~getinfo()~ 把用户逇输入读入临时数组中, 调用 ~malloc()~ 函数分配存
+    储空间, 并把字符串拷贝到新分配的存储空间中. 对名和姓都要这样做
+    #+begin_src c
+      void getinfo(struct namect* pst)
+      {
+        char temp[SLEN];
+        printf("Please enter your fist name.\n");
+
+        s_gets(temp, SLEN);
+
+        // 分配内存储存名
+        pst->fname = (char*)malloc(strlen(temp) + 1);
+        // 把名拷贝到已分配的内存
+        strcpy(pst->fname, temp);
+        printf("Please enter your last name.\n");
+        s_gets(temp, SLEN);
+        pst->lname = (char*)malloc(strlen(temp) + 1);
+        strcpy(pst->lname, temp);
+      }
+    #+end_src
+
+    要理解这 2 个字符串都未储存在接哦股中, 储存在 ~malloc()~ 分配的内存块中. 然
+    而, 结构中储存着这 2 个字符串的地址, 处理字符串的函数通常都要使用字符串的地址,
+    因此, 不用修改程序中的其他函数
+
+    记住 ~malloc()~ 应该与 ~free()~ 成对使用. 见 ~names3.c~
