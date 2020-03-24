@@ -473,3 +473,445 @@
     因此, 不用修改程序中的其他函数
 
     记住 ~malloc()~ 应该与 ~free()~ 成对使用. 见 ~names3.c~
+*** 复合字面量和结构(C99)
+    C99 的复合字面量特定可用于结构和数组. 
+    eg: 可以使用复合字面量创建一个数组作为函数的参数赋给另一个结构. 语法是把类型
+    名放在圆括号中, 后面紧跟一个用花括号括起来的初始化列表
+
+    #+begin_src c
+      (struct book){ "The Idiot", "Fyodor Dostoyevsky", 6.99 }
+    #+end_src
+    
+    ~complit.c~ 示例: 使用复合字面量为一个结构变量提供 2 个可替换的值
+
+    还可以把复合字面量作为函数的参数. 如果函数接受一个结构, 可以把复合字面量作为
+    实际参数传递:
+
+    #+begin_src c
+      struct rect { double x; double y };
+      double rect_area(struct rect r) { return r.x * r.y };
+
+      // ...
+
+      double area;
+      area = rect_area((struct rect) { 10.5, 20.0 });
+    #+end_src
+    值 210 被赋给 ~area~
+
+    如果函数接受一个地址:
+    #+begin_src c
+      struct rect { double x; double y };
+
+      double rect_areap(struct rect* rp) { return rp->x * rp->y; }
+
+      double area;
+
+      area = rect_arep(&(struct rect) { 10.5, 20.0 });
+    #+end_src
+
+    复合字面量在所有函数的外部, 具有 *静态存储期*; 如果复合字面量在块中, 则具有
+    *自动存储期*. 复合字面量和普通初始化列表的语法规则相同. 这意味着, 可以在复合
+    字面量中使用指定初始化器
+
+*** 伸缩型数组成员(C99)
+    C99 新增特性: 伸缩型数组成员(flexible array member), 利用这项特性声明的结构,
+    其最后一个数组成员具有一些特性:
+    1. 数组 *不会立即存在*
+    2. 伸缩型数组成员可以编写合适的代码, 就像它确实存在并具有所需数目的元素一样
+
+    声明一个伸缩型数组成员有如下规则:
+    1. 伸缩型数组成员必须是结构的最后一个成员
+    2. 结构中必须至少有一个成员
+    3. 伸缩型数组的声明类似于普通数组, 至少它的方括号中是空的.
+      
+    eg:
+    #+begin_src c
+      struct flex
+      {
+        int count;
+        double average;
+        double scores[]; // 伸缩型数组成员
+      }
+    #+end_src
+    
+    声明一个 ~struct flex~ 类型的结构变量时, 不能用 ~scores~ 做任何事, 因为 *没
+    有给这个数组预留存储空间*. 实际上, C99 的意图并不是让你声明 ~struct flex~ 类
+    型的变量, 而是希望你声明一个指向 ~struct flex~ 类型的 *指针*, 然后用
+    ~malloc()~ 来分配足够的空间. 例如, 假设用 ~scores~ 表示一个内含 5 个 ~double~
+    类型值的数组, 可以这样做
+    #+begin_src c
+      struct flex* pf; // 声明一个指针
+      // 请求一个未结构和一个数组分配存储空间
+      pf = malloc(sizeof(struct flex) + 5 * sizeof(double));
+    #+end_src
+
+    现在有足够的存储空间储存 ~count~ , ~average~ 和一个内含 5 个 ~double~ 类型值的
+    数组, 可以用指针 ~pf~ 访问这些成员:
+    #+begin_src c
+      pf->count = 5;
+      pf->scores[2] = 18.5;
+    #+end_src
+    
+    eg: ~flexmemb.c~
+
+    带伸缩型数组成员有一些特殊处理要求:
+    1. 不能用 *结构进行赋值或拷贝*:
+       #+begin_src c
+         struct flex *pf1, *pf2; // 都是接哦股
+         //...
+         *pf2 = *pf1; // 不要这样做
+       #+end_src
+
+       这样做只能拷贝 *除伸缩型数组成员以外* 的其他成员. 确实要进行拷贝请使用
+       ~memcpy()~
+
+    2. 不要以按值方式把这种结构传递给结构. 原因相同, 按值传递一个参数与赋值类型.
+       要把结构的地址传递给函数.
+
+    3. 不要使用带伸缩型数组的结构 *作为数组成员* 或另一个结构的成员
+       
+    这种类型与结构中最后一个成员是伸缩型数组情况, 称为 ~struct hack~. 除了伸缩型
+    数组成员在声明时用空的方括号外, ~struct hack~ *特指大小为 0 的数组*. 然而, 该
+    特性是 ~GCC~ 的, *不属于* C 标准, 这种伸缩型数组成员方法是标准认可的编程技巧.
+*** 匿名结构(C11) 
+    匿名结构是一个没有名称的结构成员.
+    先考虑如何创建嵌套结构:
+    #+begin_src c
+      struct names
+      {
+        char first[20];
+        char last[20];
+      };
+
+      struct person
+      {
+        int id;
+        struct names name; // 嵌套结构成员
+      };
+
+      struct person ted = { 8483, { "Ted", "Grass" } };
+    #+end_src
+
+    这里, name 成员是一个嵌套结构. 可以使用如下方式访问 "ted":
+    #+begin_src c
+      puts(ted.name.first);
+    #+end_src
+
+    在 C11 中, 可以用嵌套的匿名成员结构定义 person:
+    #+begin_src c
+      struct person
+      {
+        int id;
+        struct {
+          char first[20];
+          char last[20];
+        }; // 匿名结构
+      }
+    #+end_src
+
+    初始化 ted 的方式相同:
+    #+begin_src c
+      struct person ted = { 8483, { "Ted", "Grass" } };
+    #+end_src
+
+    *在访问时简化了步骤*:
+    #+begin_src c
+      puts(ted.first);
+    #+end_src
+
+    也可以把 first 和 last 直接作为 ~person~ 的成员, 删除嵌套循环. 匿名特性在嵌
+    套联合中更加有用
+*** 使用结构数组的函数
+    假设一个函数要处理一个结构数组. 由于数组名就是该数组的地址, 所以可以把它传递
+    给函数. 另外: 该函数还需访问结构模板. 为了理解该函数的工作原理, ~funds.c~ 中
+    把前面的金融程序扩展为 2 人, 所以需要一个内含 2 个 ~founds~ 结构的数组
+
+    要点:
+    1. 可以把数组名作为数组中的第 1 个结构的地址传递给函数
+    2. 然后可以用数组表示法访问数组中的其他结构.
+       #+begin_src c
+         sum(&jones[0], N);
+       #+end_src
+    3. 由于 ~sum()~ 函数不能改变原始数据, 所以该函数使用了 ~ANSI C~ 的限定符 ~const~
+
+** 把结构内容保存到文件中
+   由于结构可以储存不同的信息, 所以它是构建数据库的 *重要工具*.
+
+   eg: 用一个结构储存雇员或汽车零件的相关信息. 最终, 我们要把这些信息储存在文件
+   中, 并且能再次检索. 数据库文件可以包含任意数量的此类数据对象. 储存在一个结构
+   中的整套信息被称为记录(record), 单独的项被称为字段(field).
+
+   或许储存记录最没效率的方法是用 ~fprintf()~.
+
+   eg: 14.1 中的 ~book~ 结构:
+   #+begin_src c
+     #define MAXTITL 40
+     #define MAXAUTL 40
+
+     struct book
+     {
+       char title[MAXTITL];
+       char author[MAXAUTL];
+       float value;
+     };
+   #+end_src
+
+   当 ~pbook~ 标识一个文件流时, 可用如下语句储存(假设 ~primer~ 为结构变量):
+   #+begin_src c
+     fprintf(pbooks, "%s %s %.2f.\n", primer.title, primer.author, primer.value);
+   #+end_src
+
+   更好的方案是使用 ~fread()~ 和 ~fwrite()~ 函数读写结构大小的单元:
+   eg:
+   #+begin_src c
+     fwrite(&primer, sizeof(struct book), 1, pbooks);
+   #+end_src
+
+   定位到 ~primer~ 结构变量开始的位置, 并把结构中的所有字节都拷贝到与 ~pbooks~
+   相关的文件中. ~sizeof(struct book)~ 告诉函数待拷贝的一块数据的大小., 1 表示次
+   数
+
+   以二进制表示法储存数据的缺点是: 不同的系统, 不同的编译器可能使用不同的二进制表示法, 所以数
+   据文件 *可能不具备可移植性*.
+
+*** 保存结构的程序示例
+    把 1.42 的程序清单修改为一个新的版本, 把书名保存在 ~book.dat~ 文件中, 如果该文
+    件已存在, 程序将显示它定期的内容, 然后允许在文件中添加内容
+
+    见 ~booksave.c~
+
+*** 程序要点
+    首先, 以 ~"a+b"~ 模式打开文件, 允许读取整个文件并在末尾添加内容
+
+    选择二进制模式是因为 ~fread()~ 和 ~fwrite()~ 函数要使用二进制文件. 虽然结构
+    中有些内容是文本, 但 ~value~ 成员不是文本. 如果使用文本编辑器查看, 文本内容
+    正常, 数值部分不可读, 可能会导致乱码
+
+    ~rewind()~ 函数确保指针位于文件开始处, 为读文件做好准备
+
+    第 1 个 ~while~ 循环每次把一个结构读到结构数组中, 当数组已满或读完文件时停止,
+    变量 ~filecount~ 统计已读结构的变量.
+
+    第 2 个 ~while~ 循环提示用户进行输入, 并接受用户的输入
+
+    然后 ~for~ 循环打印文件和用户输入的数据.
+
+    可以用一个循环就在文件末尾一次添加一个结构, 但还是决定用 ~fwrite()~ 一次写入
+    一块数据, ~count - filecount~ 求值得新添加的书籍数量, 然后调用 ~fwrite()~ 把
+    结构大小的块写入文件. 由于表达式 ~&library[filecount]~ 是数组中第 1 个新结构
+    的地址, 所以拷贝从这里开始.
+
+    这种方法浪费存储空间, 因为还是保存了结构中未使用的被部分, 该结构的大小是:
+    ~2 * 40 * sizeof(char) + sizeof(float)~. 实际上不是每个输入项头需要这么多空
+    间. 但是, 让每个输入块的大小相同在检索数据时很方便.
+
+    另一个方法是使用可变大小的记录. 为了方便读取文件中的这种记录, 每个记录以数值
+    字段规定记录的大小. 这比当前方法复杂. 通常, 这种方法涉及 *链式结构* 和动态分
+    内存分配
+
+** 链式结构
+   结构的多种用途之一: 创建新的数据形式. 计算机用户已经开发出的一些数据形式比我
+   们提到过的数组和简单结构更有效地解决特定的问题. 包括: 队列, 二叉树, 堆, 哈希
+   表和图表. 许多这样的形式都由 *链式结构(linked structure)* 组成. 通常, 每个结
+   构都包含一两个数据项和一两个指向其他同类型结构的指针. 这些指针把每一个结构和
+   另一个结构连接起来, 并提供一种路径能遍历整个彼此链接的结构.
+
+   分级或树状的结构是否比数组高效? 考虑一个有 10 级节点树的情. 它有 ~2^10-1~ 或
+   (1023)个节点, 可以储存 1023 个单词. 如果这些单词以某种规则排列, 那么可以从最顶
+   层开始, 逐级向下移动查找单词, 最多只需移动 9 次便可找到人一旦此. 如果把这些单词
+   都放在一个数组中, 最多要查找 1023 个元素才能找出所需的单词.
+
+** 联合简介
+   联合(union)是一种数据类型, 它能在同一个内存空间中储存不同的数据类型(不是同时
+   储存). 其最典型的用法是, 设计一种表以储存既无规律, 事先也不知道顺序的混合类型.
+   使用联合类型的数组, 其中的联合都大小相等, 每个联合可以储存各种数据类型.
+
+   
+   创建联合和创建结构的方式相同, 需要一个联合模板和联合变量. 可以用一个步骤定义
+   联合, 也可以用联合标记分 2 步定义.
+
+   eg: 带标记的联合模板
+   #+begin_src c
+     union hold {
+       int digit;
+       double bigfl;
+       char letter;
+     };
+   #+end_src
+
+   根据以上声明的结构可以储存一个类型的值或一个 double 类型的值或一个 char 类型
+   的值
+
+   eg: 3 个 hold 类型相关的变量:
+   #+begin_src c
+     union hold fit; // hold 类型的联合变量
+     union hold save[10]; // 内含10个联合变量的数组
+     union hold* pu; // 指向hold类型联合变量的指针
+   #+end_src
+
+   第一个声明创建了一个单独的联合变量 ~fit~. 编译器分配足够的空间以便它能储存联
+   合声明中占用最大字节的类型. 本例中是 ~double~ 类型的数据. 第二个声明创建了一
+   个数组 ~save~, 内含 10 个元素, 每个元素都是 8 字节. 第 3 个声明创建了一个指针
+
+   可以初始化联合. 需要注意的是, 联合只能储存一个值, 这与结构不同. 有 3 种初始化的
+   方法: 把一个联合初始化为另一个同类型的联合, 初始化联合的第 1 个元素, 或者根据
+   C99 标准, 使用指定初始化器.
+
+   #+begin_src c
+     union hold valA;
+     valA.letter = 'R';
+     union hold valB = valA; // 用另一个联合来初始化
+     union hold valC = { 88 }; // 初始化联合的 digit 成员
+     union hold valD = { .bigfl = 118.2 }; // 指定初始化器
+   #+end_src
+
+*** 使用联合
+    下面是联合的一些方法:
+    #+begin_src c
+      fit.digit = 23; // 把 23 储存在 fit, 占2字节
+      fit.bigfl = 2.0; // 清除23, 储存2.0, 占8字节
+      fit.letter = 'h'; // 清除2.0, 储存h, 占1字节
+    #+end_src
+
+    点运算符表示正在使用哪种数据类型. 在联合中, *一次只储存一个值*. 即使有足够的
+    空间, 也不能同时储存一个 ~char~ 类型值和一个 ~int~ 类型值. 编写代码时要注意
+    当前储存在联合中的数据类型.
+
+    和用指针访问结构使用 ~->~ 运算符一样, 用指针访问联合时也要使用 ~->~ 运算符
+    
+    #+begin_src c
+      put = &fit;
+      x = pu->digit; // 相当于 x = fit.digit;
+    #+end_src
+    
+    不要像下面的语句这样:
+    #+begin_src c
+      fit.letter = 'A';
+      flnum = 3.02 * fit.bigfl; // 错误
+    #+end_src
+
+    因为储存在 ~fit~ 中的是 ~char~ 类型, 但是下一行却假定内容是 ~double~ 类型
+
+    用一个成员把值储存在一个联合中, 然后用另一个成员查看内容, 这种用法有时很有用
+
+    联合的另一种用法是: 在结构中储存与其成员有从属关系的信息.
+    eg: 用一个结构表示一辆汽车. 如果汽车属于驾驶者, 就要用一个结构成员来描述这个
+    所有者. 如果汽车被租赁, 那么需要一个成员来描述其租赁公司.
+    
+    #+begin_src c
+      struct owner
+      {
+        char socsercurity[12];
+        // ...
+      };
+
+      struct leasecompany
+      {
+        char name[40];
+        char headquarters[40];
+        // ...
+      };
+
+      union data {
+        struct owner owncar;
+        struct leasecompany leasecar;
+      };
+
+      struct car_data
+      {
+        char make[15];
+        int status; // 私有为 0, 租赁为 1
+        union data ownerinfo;
+        // ...
+      };
+    #+end_src
+
+    假设 ~flits~ 是 ~char_data~ 类型的结构变量, 如果 ~flits.status~ 为 0, 程序将
+    使用 ~flits.ownerinfo.owncar.socsecurity~, 如果 ~flits.status~ 为 1, 程序则使
+    用 ~flits.ownerinfo.leasecar.name~
+
+*** 匿名联合(C11)
+    匿名联合和匿名结构的工作原理相同, 即匿名联合是一个接哦股或联合的无名联合成员.
+
+    eg: 重新定义 ~car_data~
+    #+begin_src c
+      struct owncar
+      {
+        char socsercurity[12];
+        // ...
+      };
+
+      struct leasecompany
+      {
+        char name[40];
+        char headquarters[40];
+        // ...
+      };
+
+      struct car_data
+      {
+        char make[15];
+        int status;
+        union {
+          struct owner owncar;
+          struct leasecompany leasecar;
+        };
+      };
+    #+end_src
+
+    现在, 如果 ~flits~ 是 ~car_data~ 类型的结构变量, 可以用
+    ~flits.owncar.socsecurity~ 代替 ~flits.ownerinfo.owncar.socsecurity~
+
+
+    总结: 
+    成员运算符: ~.~
+
+    该运算符与结构或联合名一起使用, 指定结构或联合的一个成员. 如果 ~name~ 是一个
+    结构的名称, ~member~ 是该结构模板指定的一个成员名, 下面标识了该结构的这个成
+    员:
+
+    #+begin_src c
+      name.member;
+    #+end_src
+
+    ~name.member~ 的类型就是 ~member~ 的类型. 联合使用成员运算符的方式与结构相同
+    
+    eg:
+    #+begin_src c
+      struct {
+        int code;
+        float cost;
+      } item;
+
+      item.code = 1265;
+    #+end_src
+
+    间接成员运算符: ~->~
+    
+    该运算符和指向结构或联合的指针一起使用, 标识结构或联合的一个成员. 假设
+    ~ptrstr~ 是指向结构的指针, ~member~ 是该结构模板指定的一个成员, 那么:
+    #+begin_src c
+      ptrstr->member
+    #+end_src
+
+    标识了指向结构的成员. 联合使用间接成员运算符的方式与结构相同.
+
+    eg:
+    #+begin_src c
+      struct {
+        int code;
+        float cost;
+      } item, *ptrst;
+
+      ptrst = &item;
+      ptrst->code = 3451;
+    #+end_src
+
+    最后一条语句把一个 ~int~ 类型的值赋给 ~item~ 的 ~code~ 成员.
+    以下 3 个表达式等价:
+    #+begin_src c
+      ptrst->code
+      item.code
+      (*ptrst).code
+    #+end_src
+    
