@@ -10,7 +10,7 @@
 
   - 联合和指向函数的指针
 
-  - C 提供了结构变量(~structure variable) 提高表示数据的能力, 可以创造新的格式.
+  - C 提供了结构变量(structure variable) 提高表示数据的能力, 可以创造新的格式.
 
 ** 示例问题: 创建图书目录
    打印一份图书目录, 需要打印每本书的信息: 书名, 作者, 出版社, 版权日期, 页数,
@@ -915,3 +915,400 @@
       (*ptrst).code
     #+end_src
     
+** 枚举类型
+   可以用枚举类型(enumerated type) 声明符号命令来表示整型常量. 使用 ~enum~ 关键
+   字, 可以创建一个新 "类型" 并指定它可具有的值(实际上, ~enum~ 常量是 ~int~ 类型,
+   因此, 只要能使用 ~int~ 类型的地方就可以使用枚举类型 ). 枚举类型的目的是提高程
+   序的可读性, 它的语法与结构的语法相同.
+
+   #+begin_src c
+     enum spectrum { red,  orange, yellow, green, blue, violet };
+     enum spectrum color;
+   #+end_src
+
+   第 1 个声明创建了 ~spectrum~ 作为标记名, 允许把 ~enum spectrum~ 作为一个类型
+   名使用. 第 2 个声明使 ~color~ 作为该类型的变量. 第 1 个声明中花括号的标识符被
+   拒了 ~spectrum~ 变量可能有的值. 因此, ~color~ 可能的值是 ~red~, ~orange~,
+   ~yellow~ 等. 这些符号常量被称为 *枚举符(enumerator)*. 然后, 便可以这样用:
+
+   #+begin_src c
+     int c;
+     color = blue;
+
+     if (color == yellow) {
+       // ...
+       for (color = red; color <= violet; ++color) {
+         // ..
+       }
+
+     }
+   #+end_src
+
+   虽然枚举符(如 ~red~ 和 ~blue~) 是 ~int~ 类型, 但是枚举类型可以是任意整数类型,
+   前提是该整数类型可以储存枚举常量. 
+
+   eg: ~spectrum~ 的枚举符范围是 0~5, 所以编译器可以用 ~unsigned char~ 来表示
+   ~color~ 变量
+
+   Tips: C 枚举的一些特性 *并不适用于 C++*. 
+   eg: C 允许枚举变量使用 ~++~ 运算符, 但是 C++ 标准不允许. 如果编写的代码会并入
+   C++ 程序, 那么必须把上例的 color 声明为 ~int~ 类型, 才能兼容
+
+*** ~enum~ 常量
+    假定有前面的枚举声明, 以下代码可以生效:
+    #+begin_src c
+      printf("red = %d, orange = %d\n", red, orange);
+    #+end_src
+
+    输出:
+    #+begin_src bash
+      red = 0, orange = 1
+    #+end_src
+
+    ~red~ 成为一个有名称的常量, 代表整数 0. 类似地, 其他标识符都是有名称的常量,
+    分别代表 1~5. *只要是能用整型常量的地方就可以使用枚举常量*.
+
+    eg: 声明数组时与 ~switch~ 语句中.
+
+*** 默认值
+    默认的情况下, 枚举类别中的常量都被赋予 ~0, 1, 2~ 等. 因此, 下面的声明中
+    ~nina~ 的值是 3:
+    #+begin_src c
+      enum kids { nippy, slats, skippy, nina, liz };
+    #+end_src
+
+*** 赋值
+    在枚举声明中, 可以为枚举常量 *指定整数值*:
+    #+begin_src c
+      enum levels { low = 100, medium = 500, high = 2000 };
+    #+end_src
+    
+    如果只给一个枚举常量赋值, 没有对后面的枚举常量赋值, 那么后面的常量会被赋予后
+    续的值
+
+    eg:
+    #+begin_src c
+      enum feline {
+        cat, // 0
+        lymx = 10, // 10
+        puma, // 11
+        tiger // 12
+      };
+    #+end_src
+    
+*** ~enum~ 的用法
+    枚举类型的目的是提高程序的可读性和可维护性. 
+    注意: *枚举类型只能在内部使用*. 
+    eg: 要输入 ~color~ 中 ~orange~ 的值, 只能输入 1, 而不是单词 ~orange~.
+    或者, 让程序先读入字符串 "orange", 再将其转为 ~orange~ 代表的值
+
+    因为枚举类型是整数类型, 所以可以在表达式中以使用整数变量的方式使用 ~enum~ 变
+    量. 它们用在 ~case~ 语句中很方便
+
+    eg: ~enum.c~: 把 ~red~ 的值设置为 0, 使之成为指向字符串 "red" 的指针的索引
+
+*** 共享名称空间
+    C 语言使用名称空间(namespace)标识程序中的各部分, 即通过名称来识别, 作用域是名
+    称空间概念的一部分: 2 个 *不同作用域的同名变量不冲突*. 名称空间是分类别的.
+    在特定作用域中的结构标记, 联合标记和枚举标记都共享相同的名称空间, 该名称空间
+    与普通变量使用的空间不同. 这意味着在相同作用域中变量和标记的名称可以相同, 不
+    会引起冲突, 但是不在再相同作用域中声明 2 个同名标签或同名变量
+
+    #+begin_src c
+      struct rect {
+        double x;
+        double y;
+      };
+
+      int rect; // 在C中不会产生冲突
+    #+end_src
+
+    C++ 中不允许这样做, 因为它把标记名和变量名放在相同的名称空间中
+    
+** ~typedef~ 简介
+   ~typedef~ 工具是一个高级数据特性, 利用 ~typedef~ 可以为某一类型定义名称. 这方
+   面与 ~#define~ 类似, 但是 2 者有三处不同:
+
+   1. 与 ~#define~ 不同, ~typedef~ 创建的符号名只受限于类型, 不能用于值
+   2. ~typedef~ 由 *编译器* 解释, 不是 *预处理器*
+   3. 在其受限的范围内, ~typedef~ 比 ~#define~ 更灵活
+
+      
+   ~typedef~ 工作原理:
+   假设要用 ~BYTE~ 表示 1 字节的数组, 只需像定义个 ~char~ 类型变量一样定义
+   ~BYTE~, 然后在定义前面加上关键字 ~typedef~ 即可
+   #+begin_src c
+     typedef unsigned char BYTE;
+   #+end_src
+   
+   随后, 便可以使用 ~BYTE~ 来定义变量:
+   #+begin_src c
+     BYTE x, y[10], *z;
+   #+end_src
+   
+   该定义的作用域取决于 ~typedef~ *定义所在的位置*. 如果定义在函数中, 就具有局部
+   作用域, 受限于定义所在的函数. 如果定义在函数外面, 就具有文件作用域.
+
+   通常, ~typedef~ 定义中 *用大写字母表示被定义的名称*, 以提醒用户这个类型名实际
+   上是一个符号缩写. 名称遵循变量的命名规则
+
+   C 标准规定 ~sizeof~ 和 ~time()~ 返回整数类型, 但是让实现来决定具体是什么类型.
+   所以, 标准委员会决定简历一个新的类型名(eg: ~time_t~), 并让实现使用 ~typedef~
+   来设置它的数据类型.
+
+   #+begin_src c
+     time_t time(time_t*);
+   #+end_src
+   
+   ~time_t~ 在不同系统中的代表类型可能不同, 但是只要包含 ~time.h~ 头文件, 程序就
+   你访问合适的定义
+
+   与 ~#define~ 功能重合的部分:
+   #+begin_src c
+     #define BYTE unsigned char
+   #+end_src
+
+   不重合的部分:
+   #+begin_src c
+     typedef char* STRING;
+   #+end_src
+
+   编译器把 ~STRING~ 解释成一个类型的标识符
+   #+begin_src c
+     STRING name, sign;
+
+     // 与下面等价
+
+     char *name, *sign;
+   #+end_src
+
+   当使用 ~#define~ 时:
+   #+begin_src c
+     #define STRING char*
+
+     STRING name, sign;
+
+     // 将被翻译成:
+
+     char* name, sign;
+   #+end_src
+
+   这导致只有 ~name~ 才是指针
+
+   ~typedef~ 还可用于结构:
+   #+begin_src c
+     typedef struct complex
+     {
+       float real;
+       float image;
+     } COMPLEX;
+   #+end_src
+
+   使用 ~typedef~ 来命名一个结构类型时, 可以省略该结构的标签:
+   #+begin_src c
+     typedef struct { double x; double y; } rect;
+   #+end_src
+
+   使用 ~typedef~ 给复杂类型命名
+   #+begin_src c
+     typedef char (*FRPTC()) [5];
+   #+end_src
+   
+   把 ~FRPTC~ 声明为一个函数类型, 该函数返回一个指针, 该指针指向内含 5 个 ~char~
+   类型元素的数组
+
+** 其他复杂的声明
+   C 允许用户自定义数据形式. 虽然我们常用的是一些简单的形式, 但是根据需要优势还
+   会用到一些复杂形式:
+
+   声明时可使用的符号:
+   | 符号 | 含义         |
+   |------+--------------|
+   | \*   | 表示一个指针 |
+   | ()   | 表示一个函数 |
+   | []   | 表示一个数组 |
+
+   较复杂的声明示例:
+   #+begin_src c
+     int board[8][8]; // 声明一个内含 int 数组的数组
+     int** ptr; // 声明一个指向指针的指针, 被指向的指针指向 int
+     int* risks[10]; // 声明一个内含 10 个元素的数组, 每个元素都是一个指向 int 的指针
+     int (* rusks)[10]; // 声明一个指向数组的指针, 该数组内含 10 个 int 类型的值
+     int* oof[3][4]; // 声明一个 3 * 4 的二维数组, 每个元素都是指向 int 的指针
+     int (* uuf)[3][4]; // 声明一个指向 3 * 4 的二维数组的指针, 该数组中内含 int 类型值
+   #+end_src
+
+   符号优先级:
+
+   1. 数组名后面的 ~[]~ 和函数名后面的 ~()~ 具有 *相同的优先级*. 它们比 ~*~ (解
+      引用运算符)的优先级高. 因此下面的声明为指针数组, 而不是指向数组的指针:
+      #+begin_src c
+        int *risks[10];
+      #+end_src
+
+   2. ~[]~ 和 ~()~ 的优先级相同, 由于都是从左往右结合, 所以下面的声明中, 在应用
+      方括号之前, ~*~ 咸鱼 ~rusks~ 结合. 因此 ~rusks~ 是一个指向数组的指针, 内含
+      10 个 ~int~ 类型的元素:
+      #+begin_src c
+        int (*rusks)[10];
+      #+end_src
+
+   3. ~[]~ 和 ~()~ 都是 *从左往右结合*. 因此下面的声明是一个由 12 个内含 50 个
+      ~int~ 类型值的数组组成的二维数组, 不是一个有 50 个内含 12 个 ~int~ 类型值
+      的数组组成的二维数组
+      #+begin_src c
+        int goods[12][50];
+      #+end_src
+
+      把以上的规则应用于下面的声明:
+      #+begin_src c
+        int* oof[3][4];
+      #+end_src
+      
+      ~[3]~ 比 ~*~ 的优先级高, 由于从左往右结合. 因此, ~oof~ 首先是一个内含 3 个
+      元素的数组, 然后在与 ~[4]~ 结合, 所以 ~oof~ 的每个元素都是内含 4 个元素的
+      数组, ~*~ 说明这些元素怒都是指针. 最后, ~int~ 表明了这 4 个元素都是指向
+      ~int~ 的指针. 编译器要为 12 个指针预留存储空间
+
+      #+begin_src c
+        int (*uuf)[3][4];
+      #+end_src
+      
+      圆括号使得 ~*~ 先与 ~uuf~ 结合, 说明 ~uuf~ 是一个指针, 所以 ~uuf~ 是一个指
+      向 3 * 4 的 ~int~ 类型二维数组的指针. 编译器要为一个指针预留存储空间
+
+      #+begin_src c
+        char* fump(int); // 返回字符指针的函数
+        char (*frump)(int); // 指向函数的指针, 该函数的返回类型为 ~char~
+        char (* flump[3])(int); // 内含3个指针的数组, 每个指针都指向返回类型为 char 的函数
+      #+end_src
+
+      这 3 个函数都接受 ~int~ 类型的参数
+      可以使用 ~typedef~ 建立一系列相关类型:
+      #+begin_src c
+        typedef int arr5[5];
+        typedef arr5 *p_arr5;
+        typedef p_arr5 arrp10[10];
+
+        arr5 togs; // togs 是一个内含 5 个 int 类型值的数组
+        p_arr5 p2; // p2 是一个指向数组的指针, 该数组内含 5 个 int 类型的值
+        arrp10 ap; // ap 是一个内含 10 个指针的数组, 每个指针都指向一个内含 5 个 int 类型值的数组
+      #+end_src
+
+** 函数和指针
+   *可以声明一个指向函数的指针*.
+   函数指针常用作另一个函数的参数, 告诉该函数要使用哪一个函数. 例如, 排序数组设
+   计比较 2 个元素, 以确定先后. 如果是数字, 可以使用 ~>~ 运算符, 如果是字符串或
+   结构, 就要调用函数来进行比较.
+
+   C 库中的 ~qsort()~ 函数可以处理任意类型的数组, 但是要告诉 ~qsort()~ 使用哪个
+   函数来比较元素, 为此, ~qsort()~ 函数的参数列表中, 有一个参数 *接受指向函数的
+   指针*. 然后, ~qsort()~ 函数使用该函数提供的方案进行排序, 无论数组中的元素是
+   整数, 字符串还是结构
+
+   函数也有地址, 指向函数的指针中储存着函数代码的起始处地址.2f.\n
+   声明一个数据指针时, 必须声明指针所指向的数据类型. 声明一个函数指针时, *必须声
+   明指针指向的函数类型*. 为了指明函数类型, 要指明函数前面, 即函数的返回类型和形
+   参类型.
+
+   eg:
+   #+begin_src c
+     void ToUpper(char*); // 把字符串中的字符转换成大写字符
+   #+end_src
+
+   ~ToUpper()~ 函数的类型是 "带 ~char *~"类型参数, 返回类型是 ~void~ 的函数.
+
+   下面声明了一个指针 ~pf~ 指向该函数类型:
+   #+begin_src c
+     void (*pf)(char*); // pf 是一个指向函数的指针
+   #+end_src
+
+   从该声明可以看出, 第 1 对圆括号把 ~*~ 和 ~pf~ 括起来, 表明 ~pf~ 是一个指向函
+   数的指针. 因此, ~(\*pf)~ 是一个参数列表为 ~(char\*)~, 返回类型为 ~void~ 的函数.
+
+   如果想声明一个指向某类型函数的指针, 可以写出该函数的原型后把函数名替换成
+   ~(\*pf)~ 形式的表达式, 创建函数指针声明. 由于运算符优先级的规则, 在声明函数指
+   针时必须把 ~*~ 和指针名括起来., 如果省略第一个圆括号会导致结果完全不同
+
+   #+begin_src c
+     void *pf (char*); // pf 是一个返回字符指针的函数
+   #+end_src
+   
+   eg: 指针赋值:
+   #+begin_src c
+     void ToUpper(char*);
+     void ToLower(char*);
+
+     int round(double);
+     void (*pf)(char*);
+
+     pf = ToUpper; // 有效, ToUpper 是该类型函数的地址
+     pf = ToLower; // 有效, ToLower 是该类型函数的地址
+     pf = round; // 无效, round 与指针类型不匹配
+     pf = ToLower(); // 无效, ToLower() 不是地址
+   #+end_src
+
+   可以用数据指针访问数据, 也可以用函数指针访问函数, 2 种逻辑上不一致的语法可以这
+   样做:
+   #+begin_src c
+     void ToUpper(char*);
+     void ToLower(char*);
+
+     void (*pf)(char*);
+
+     char mis[] = "Nina Metier";
+     pf = ToUpper;
+     (*pf)(mis); // 把 ToUpper 作用余(语法1)
+     pf = ToLower;
+     pf(mis); // 把 ToLower 作用于(语法 2)
+   #+end_src
+
+   这 2 种方法看上去合情合理. 分析:
+   1. 由于 ~pf~ 指向 ~ToUpper~ 函数, 那么~*pf~ 就相当于与 ~ToUp~ 函数, 所以
+      ~(*pf)(mis)~ 和 ~ToUpper(mis)~ 相同.
+
+   2. 由于函数名是指针, 那么指针和函数名可以互换使用, 所以 ~pf(mis)~ 和
+      ~ToUpper(mis)~ 相同. 从 ~pf~ 的 *赋值表达式语句* 就能看出 ~ToUpper~ 和
+      ~pf~ 是等价的.
+
+      
+   历史原因, 贝尔实验室的 ~C~ 和 ~UNIX~ 开发者采用第一种, 而伯克利的 ~UNIX~ 推广
+   者却采用第 2 种, 为了兼容, ANSI C 认为这 2 种形式等价
+
+   函数指针作为函数的参数:
+   #+begin_src c
+     void show(void (*fp)(char*), char* str);
+   #+end_src
+   
+   调用示例:
+   #+begin_src c
+     show(ToLower, mis); // show() 使用 ToLower() 函数: fp = ToLower
+     show(pf, mis); // show() 使用 pf 指向的函数: fp = pf
+   #+end_src
+   
+   使用实例:
+   #+begin_src c
+     void show(void (*fp)(char*), char* str)
+     {
+       (*fp)(str); // 把所选函数作用于 str
+       puts(str); // 显示结果
+     }
+   #+end_src
+
+   eg:  ~func_ptr.c~
+
+   注意: ~ToUpper()~, ~ToLower()~, ~Transpose()~ 和 ~Dummy()~ 函数的类型都相同,
+   所以这 4 个函数都可以赋给 ~pfun~ 指针. 
+
+   该情况下可以使用 ~typedef~
+   #+begin_src c
+     typedef void (*V_FP_CHARP)(char*);
+     void show(V_FP_CHARP fp, char*);
+   #+end_src
+
+   可以声明并初始化一个函数指针的数组
+   #+begin_src c
+     V_FP_CHARP aprf[4] = { ToUpper, ToLower, Transpose, Dummy };
+   #+end_src
+
+   然后修改 ~showmenu()~ 函数的返回类型为 ~int~
