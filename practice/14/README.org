@@ -1379,3 +1379,8 @@
    11. 见 ~res14.c~
    12. 见 ~res15.c~
    13. 见 ~res16.c~
+
+** 编程练习
+   1. 见 ~practice1.c~
+   2. 见 ~practice2.c~
+   3. 见 ~practice3.c~
