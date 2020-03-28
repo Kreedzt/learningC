@@ -1357,7 +1357,6 @@
      (*pdf) (1.2);
      pdf(1.2);
    #+end_src
-
    
 ** 复习题
    1. 缺少分号, 见 ~res1.c~
@@ -1384,3 +1383,5 @@
    1. 见 ~practice1.c~
    2. 见 ~practice2.c~
    3. 见 ~practice3.c~
+   4. 见 ~practice4.c~
+   5. 见 ~practice5.c~
