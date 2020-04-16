@@ -626,8 +626,116 @@
     的程序示例假设从字节的低阶位端到高阶位端输入结构. 也就是说, 结构中的第一位字
     段对应计算机的字的 0 号位
 
+    *警告*: 书中定义代码不通用, 要使得通用, ~bool~ 应换成 ~unsigned int~:
+    #+begin_src c
+      // 使用 unsigned int 避免不同系统的二进制位不同问题, 所导致的移位错误
+      struct box_props {
+        unsigned int opaque         : 1;
+        unsigned int fill_color     : 3;
+        unsigned int                : 4;
+        unsigned int show_border    : 1;
+        unsigned int border_color   : 3;
+        unsigned int border_style   : 2;
+        unsigned int                : 2;
+      };
+    #+end_src
+
     ~dualview.c~ 程序中, ~box.st_view~ 是一个使用位字段的 ~box_props~ 类型的结
     构, ~box.us_view~ 把相同的数据看作是一个 ~unsigned short~ 类型的变量. 联合只
     允许初始化第 1 个成员, 所以初始化值必须与结构相匹配. 该程序分别通过 2 个函数
     显示 ~box~ 函数, 一个函数接受一个结构, 另一个接受 ~unsigned short~ 类型的值.
     这 2 种方法都能访问数据, 但是所用的技术不同.
+
+    要点: 位字段视图和按位视图的区别是: 按位视图需要 *位置信息*.
+    eg: 程序中使用 ~BLUE~ 表示蓝色, 该符号常量的数值为 4. 但是, 由于结构排列数据
+    方式, 实际储存蓝色设置的是 3 号位(位的编号从 0 开始). 而且储存边框为蓝色的设
+    置是 11 号位.
+
+    因此, 定义了如下符号常量:
+    #+begin_src c
+      #define FILL_BLUE 0x8
+      #define BORDER_BLUE 0x800
+    #+end_src
+
+    此处, 0x8 是 3 号位为 1 时的值. 可以使用第一个符号常量设置填充色的蓝色位, 用
+    第二个符号常量设置边框颜色的蓝色位. 用十六进制计数法更容易看出要设置二进制的
+    哪一位, 由于十六进制的每一位代表二进制的 4 位, 那么 0x8 的位组合是 1000, 而
+    0x800 的位组合是 1000 0000 0000. 以十进制看: 0x8 是 8, 0x800 是 2048
+
+    如果值是 2 的幂, 那么可以使用左移运算符来表示值.
+    eg: 用下面的 ~#define~ 分别替换上面的 ~#define~:
+    #+begin_src c
+      #define FILL_BLUE 1<<3
+      #define BORDER_BLUE 1<<11
+    #+end_src
+
+    这里, ~<<~ 的右侧是 2 的指数, 0x8 即为 2^3, 0x800 是 2^11. 这些常量表达式在
+    编译时求值
+
+    可以使用枚举代替 ~#define~ 创建符号常量:
+    #+begin_src c
+      enum {
+        OPAQUE = 0x1,
+        FILL_BLUE = 0x8,
+        FILL_GREEN = 0x4,
+        FILL_RED = 0x2,
+        FILL_MASK = 0xE,
+        BORDER = 0x100,
+        BORDER_BLUE = 0x800,
+        BORDER_GREEN = 0x400,
+        BORDER_RED = 0x200,
+        BORDER_MASK = 0xE00,
+        B_DOTTED = 0x1000,
+        B_DASHED = 0x2000,
+        STYLE_MASK = 0x3000
+      };
+    #+end_src
+    
+    *Tips*: 按位运算符改变设置更加复杂.
+    eg: 设置填充色为青色. 只打开蓝色位和绿色位是不够的:
+    #+begin_src c
+      box.us_view |= (FILL_BLUE|FILL_GREEN); // 重置填充色
+    #+end_src
+
+    问题是该颜色还依赖于红色位的设置. 如果已经设置了该位(比如对于黄色), 这行代码
+    保留了红色位的设置, 而且还设置了蓝色位和绿色位, 结果是产生白色. 解决这个问题
+    最简单的方法是设置新值前关闭所有的颜色位.
+
+    因此, 如下代码解决问题:
+    #+begin_src c
+      box.us_view &= ~FILL_MASK; // 把表示填充色的位置清零
+      box.us_view |= (FILL_BLUE|FILL_GREEN); // 重置填充色
+    #+end_src
+
+    如果不先关闭所有位:
+    #+begin_src c
+      box.us_view |= BORDER_RED; // 错误的方法
+    #+end_src
+
+    由于 ~BORDER_GREEN~ 位已经设置过了, 所以结果颜色是
+    ~BORDER_GREEN|BORDER_RED~, 被解释为黄色
+
+    这种情况下, 位字段版本更简单:
+    #+begin_src c
+      box.st_view.fill_color = CYAN; // 等价的位方法
+    #+end_src
+
+    该方法不用先清空所有的位. 而且, 使用位字段成员时, 可以为边框和框内填充色使用
+    相同的颜色值. 但是用按位运算符的方法则要使用不同的值(这些值反应实际的位置)
+
+    比较 2 个打印语句:
+    #+begin_src c
+      printf("The border color is %s.\n", colors[pb->border_color]);
+
+      printf("The border color is %s.\n", colors[(us >> 9)] & 07);
+    #+end_src
+
+    第一条语句中, 表达式 ~pb->border_color~ 的值在 0~7 的范围内, 所以该表达式可
+    用作索引. 用按位运算符获得相同的信息更加复杂. 一种方法是使用 ~ui >> 9~ 把边
+    框颜色右移至最右端(0 号位~2 号位), 然后把该值与掩码 07 组合, 关闭了最右端三
+    位以外的所有位. 这样结果也在 0 ~ 7 的范围内, 可作为索引
+
+    *警告*: 位字段和位的位置之间的相互对应关系因实现而异, 运行程序结果可能不同.
+
+    可能把第一位字段载入最高阶位, 而不是最低阶位. 所以结构表示法储存在前 16 位,
+    而 ~unsigned int~ 表示法则储存在后 16 位. 因此导致移位错误
