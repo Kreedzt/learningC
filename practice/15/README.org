@@ -454,7 +454,7 @@
     2. 第一轮循环: ~mask~ 的 0 号位设置为 1, 以此类推. bits 次后, 后 bits 位都为 1
     3. ~num ^ mask~ 运算得结果
 ** 位字段
-   操作为的第 2 种方法是位子弹(bit field). 位字段是一个 ~signed int~ 或
+   操作为的第 2 种方法是位字段(bit field). 位字段是一个 ~signed int~ 或
    ~unsigned int~ 类型变量中的一组相邻的位 (C99 和 C11 新增了 ~_Bool~ 类型的位字
    段). 位字段通过一个结构声明来建立, 该结构声明为每个字段提供标签, 并确定该字段
    的宽度.
@@ -829,4 +829,55 @@
    可以使用 ~_Alignas~ *强制执行数据存储区上的对齐要求*
 
    这些工具帮助 C 程序处理硬件问题, 因此它们通常 *依赖于实现的场合中*
-   
+** 复习题
+   1. 解:
+      1) 11
+      2) 1101
+      3) 111011
+      4) 1110111
+   2. 解:
+      1) 十进制: 21, 八进制: 025, 十六进制: 0x15
+      2) 十进制: 85, 八进制: 0125, 十六进制: 0x55
+      3) 十进制: 76, 八进制: 0114, 十六进制: 0x4c
+      4) 十进制: 157, 八进制: 0235, 十六进制: 0x9d
+   3. 解:
+      1) 4
+      2) 7
+      3) 7
+      4) 7
+      5) 5
+      6) 3
+      7) 28
+   4. 解:
+      1) 255
+      2) 1
+      3) 0
+      4) 4
+      5) 6
+      6) 2
+      7) 40
+   5. 十进制: 255, 八进制: 0377, 十六进制: 0xff
+   6. 是, 否
+   7. 解:
+      1) 代码:
+         #+begin_src c
+           struct info
+           {
+             unsigned int ssum: 2;
+             unsigned int : 1;
+             unsigned int cdsum: 2;
+             unsigned int : 1;
+             unsigned int hsum: 2;
+           };
+         #+end_src
+      2) 代码:
+         #+begin_src c
+           struct info
+           {
+             unsigned int hsum: 2;
+             unsigned int : 1;
+             unsigned int cdsum: 2;
+             unsigned int : 1;
+             unsigned int ssum: 2;
+           };
+         #+end_src
