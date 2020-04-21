@@ -881,3 +881,10 @@
              unsigned int ssum: 2;
            };
          #+end_src
+** 编程练习
+   1. 见 ~practice1.c~
+   2. 见 ~practice2.c~
+   3. 见 ~practice3.c~
+   4. 见 ~practice4.c~
+   5. 见 ~practice5.c~
+   6. 见 ~practice6.c~
