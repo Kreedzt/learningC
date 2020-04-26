@@ -1129,3 +1129,313 @@
 
       size_t fread(void* restrict ptr, size_t size, size_t nmemb, FILE* restrict stream);
     #+end_src
+   
+** 数学库
+   数学库数学库中包含许多有用的数学函数. ~math.h~ 头文件提供这些函数的原型.
+
+   下表列出一些声明在 ~math.h~ 中的函数. 
+   *注意*: 函数中设计的角度都以弧度为单位(1 弧度=180/π=57.296 度).
+   参考资料 5 "新增 C99 和 C11 标准的 ANSI C 库" 列出了 C99 和 C11 标准的所有函
+   数
+
+   | 原型                             | 描述                                   |
+   |----------------------------------+----------------------------------------|
+   | double acos(double x)            | 返回余弦值为 x 的角度(0 ~ π 弧度)      |
+   | double asin(double x)            | 返回正弦值为 x 的角度(-π/2 ~ π/2 弧度) |
+   | double atan(double x)            | 返回正切值为 x 的角度(-π/2 ~ π/2 弧度) |
+   | double atan2(double y, double x) | 返回正切值为 y/x 的角度(-π ~ π 弧度)   |
+   | double cos(double x)             | 返回 x 的余弦值, x 的单位为弧度        |
+   | double sin(double x)             | 返回 x 的正弦值, x 的单位为弧度        |
+   | double tan(double x)             | 返回 x 的正切值, x 的单位为弧度        |
+   | double exp(double x)             | 返回 x 的指数函数的值(e^x)             |
+   | double log(double x)             | 返回 x 的自然对数值                    |
+   | double log10(double x)           | 返回 x 以 10 为底的对数值              |
+   | double pow(double x, double y)   | 返回 x 的 y 次幂                       |
+   | double sqrt(double x)            | 返回 x 的平方值                        |
+   | double cbrt(double x)            | 返回 x 的立方值                        |
+   | double ceil(double x)            | 返回不小于 x 的最小整数值              |
+   | double fabs(double x)            | 返回 x 的绝对值                        |
+   | double floort(double x)          | 返回不大于 x 的最大整数值              |
+
+   
+*** 三角问题
+    可以用数学库解决一些常见问题: 把 x/y 坐标转换为长度和角度.
+    eg: 在网格上画了一条线, 该线条水平穿过了 4 个单元(x 的值), 垂直穿过了 3 个单
+    元(y 的值). 那么, 该线的长度(量)和方向是:
+    #+begin_example
+      大小 = square root(x^2 + y^2)
+
+      角度 = arctan(y / x)
+    #+end_example
+
+    数学库提供平方根函数和一对反正切函数, 所以可以用 C 程序表示这个问题.
+    平方根函数是 ~sqrt()~, 接受一个 ~double~ 类型的参数, 并返回参数的平方根, 也
+    是 ~double~ 类型.
+
+    ~atan()~ 函数接受一个 ~double~ 类型的参数(即正切值), 并返回一个角度(该角度的
+    正切值就是参数值). 但是, 当线的 x 值和 y 值均为 -5 时, ~atan()~ 函数产生混乱.
+    因为 (-5)/(-5) 得 1, 所以 ~atan()~ 返回 45°, 该值与 x 和 y 均为 5 时的返回值
+    相同. 也就是说, ~atan()~ 无法区分角度相同但方向相反的线(实际上, ~atan()~ 返
+    回值的单位是弧度而不是度)
+
+    C 库还提供了 ~atan2()~ 函数. 它接受 2 个参数: x 的值和 y 的值. 这样, 通过检
+    查 x 和 y 的正负号就可以得出正确的角度值. ~atan2()~ 和 ~atan()~ 均返回弧度值.
+    把弧度转换为度, 只需将弧度值 * 180, 再 /pi 即可. pi 的值通过计算表达式 ~4 *
+    atan(1)~ 得到.
+
+    见 ~rect_pol~ 演示步骤, 还复习了结构和 ~typedef~ 相关知识
+
+    若编译时出现如下消息:
+    #+begin_example
+      Undefinded: _sqrt
+    #+end_example
+
+    或
+    #+begin_example
+      'sqrt': unresolved external
+    #+end_example
+
+    或其他类似消息, 表明编译器链接器没有找到数学库. UNIX 系统会要求使用 ~-lm~ 标
+    记(flag) 指示链接器搜索数学库
+
+    #+begin_src bash
+      cc rect_pol.c -lm
+    #+end_src
+
+    *注意*: ~-lm~ 标记在命令行的 *末尾*. 因为链接器编译 C 文件后才开始处理. 在
+     Linux 中使用 GCC 编译器可能要这样写:
+     #+begin_src bash
+       gcc rect_pol.c -lm
+     #+end_src
+ 
+*** 类型变体
+    基本的浮点型数学函数接受 double 类型的参数, 并返回 double 类型的值. 当然, 也
+    可以把 float 或 long double 类型的参数传递给这些函数, 它们仍然能正常工作, 因
+    为这些类型的参数会被转换成 double 类型. 这样做很方便, 但不是最好的处理方式.
+    如果不需要双精度, 那么用 float 类型的单精度值来计算会更快些. 而且把 long
+    double 类型的值传给 double 类型的形参会 *损失精度*, 形参获得的值可能不是原来
+    的值. 为了解决这些潜在的问题, C 标准专门为 float 类型和 long double 类型提供
+    了标准函数, 即在原函数名前加上 f 或 l 前缀. 因此, ~sqrf()~ 是 ~sqrt()~ 的
+    float 版本, ~sqrtl()~ 是 ~sqrt()~ 的 long double 版本
+
+    ~generic.c~ 演示了 利用 泛型选择表达式定义泛型宏, 并根据参数类型选择最合适的
+    数学函数版本
+
+    *注意*: 与书中结果可能不一致
+
+    ~SQRT(i)~ 和 ~SQRT(xx)~ 的返回值相同, 因为它们的参数类型分别是 int 和
+    double, 所以只能与 ~default~ 标签对应
+
+    ~SIN()~ 的定义让每个带标号的值都是函数调用, 所以 ~_Generic~ 表达式的值是一个
+    特定的函数调用, eg: ~sinf((X) / RAD_TO_DEG)~, 用传入 ~SIN()~ 的参数替换 X
+
+    ~SQRT()~ 的定义也许更简洁. ~_Generic~ 表达式的值就是函数名, 如 ~sinf~. 函数
+    的地址可以代替该函数名, 所以 ~_Generic~ 表达式的值是一个指向函数的指针. 然而,
+    紧随整个 ~Generic~ 表达式之后的是 ~(X)~, 函数指针(参数)表示函数指针. 因此,
+    这是一个带指定的参数的函数指针
+
+    简而言之, 对于 ~SIN()~, 函数调用在泛型选择表达式内部; 而对于 ~SQRT()~, 先对
+    泛型选择表达式求值得一个指针, 然后通过该指针调用它所指向的函数
+
+*** ~tgmath.h~ 库 (C99)
+    C99 标准提供的 ~tgmath.h~ 头文件中定义了泛型类型宏, 其效果与 ~generic.c~ 类
+    似. 如果在 ~math.h~ 中为一个函数定义了 3 种类型(float, double 和 long
+    double) 的版本, names ~tgmath.h~ 文件就创建一个泛型类型宏, 与原来 double 版
+    本的函数名同名.
+
+    eg: 根据提供的参数类型, 定义 ~sqrt()~ 宏展开为 ~sqrf()~, ~sqrt()~ 或
+    ~sqrtl()~ 函数. 换言之, ~sqrt()~ 宏的行为和 ~generic.c~ 中的 ~SQRT()~ 宏类似.
+
+    如果编译器支持复数运算, 就会支持 ~complex.h~ 头文件, 其中声明了与复数运算相
+    关的函数.
+    eg: ~csqrtf()~, ~csqrt()~, ~csqrtl()~, 这些函数分别返回 float complex,
+    double complex 和 long double complex 类型的 *复数平方根*. 如果提供这些支持,
+    那么 ~tgmath.h~ 中的 ~sqrt()~ 宏也能展开为相应的复数平方根函数.
+
+    如果包含了 ~tgmath.h~, 要调用 ~sqrt()~ 函数而不是 ~sqrt()~ 宏, 可以用圆括号
+    把被调用的函数名括起来:
+    #+begin_src c
+      #include <tgmath.h>
+
+      // ...
+      float x = 44.0;
+      double y;
+      y = sqrt(x); // 调用宏, 所以说 sqrtf(x)
+      y = (sqrt)(x); // 调用函数 sqrt()
+    #+end_src
+
+    这样操作没问题, 因为类函数宏的名称必须用圆括号括起来. 圆括号只会影响操作顺序,
+    不会影响括起来的表达式, 所以这样做得到的仍是函数调用的结果.
+
+    *由于 C 语言奇怪而矛盾的函数指针规则, 还也可以使用(*sqrt)()的形式来调用函数*
+
+    不借助 C 标准意外的机制, C11 新增的 ~_Generic~ 表达式是实现 ~tgmath.h~ 最简
+    单的方式
+** 通用工具库
+   通用工具库包括随机数生成器, 查找和排序函数, 转换函数和内存管理函数, 转换函数
+   和内存管理函数.
+   
+   第 12 章介绍过 ~rand()~, ~srand()~, ~malloc()~ 和 ~free()~ 函数.
+
+   在 ANSI C 标准中, 这些函数的原型都在 ~stdlib.h~ 头文件中.
+
+   附录 B 参考资料 5 列出了该系列的所有函数
+
+*** ~exit()~ 和 ~atexit()~ 函数
+    在 ~main()~ 返回系统时将自动调用 ~exit()~ 函数. ANSI 标准还新增了一些不错的
+    功能, 其中最重要的是 *可以指定在执行 ~exit()~ 时调用的特定函数.
+
+    ~atexit()~ 函数通过退出时注册呗调用的函数提供这种功能, ~atexit()~ 函数接受一
+    个函数指针作为参数. ~byebye.c~ 演示了它的用法
+
+    1. ~atexit()~ 函数的用法
+       这个函数使用函数指针. 要使用 ~atexit()~ 函数, 只需把退出时要调用的函数地
+       址传给 ~atexit()~ 即可. 函数名作为函数参数时相当于该函数的地址. 然后
+       *~atexit()~ 注册函数列表中的函数, 当调用 ~exit()~ 时就会执行这些函数*.
+       ANSI 保证, 在这个列表中至少可以放 32 个函数. 最后调用 ~exit()~ 函数时,
+       ~exit()~ 会执行这些函数(执行顺序与列表中的函数顺序相反, 即最后添加的函数
+       最先执行)
+       
+       ~atexit()~ 注册的函数(如: ~sign_off()~ 和 ~too_bad()~) 应该不带任何参数且
+       返回类型为 void. 通常, 这些函数会执行一些清理任务, eg: 更新监视程序的文件
+       或重置环境变量.
+
+       *注意*: 即使没有显式调用 ~exit()~, ~main()~ 结束时会隐式调用 ~exit()~
+
+    2. ~exit()~ 函数的用法
+       ~exit()~ 执行完 ~atexit()~ 函数后, 会完成一些清理工作: 刷新所有输出流, 关
+       闭所有打开的流和关闭由标准 I/O 函数 ~tmpfile()~ 创建的临时文件. 然后
+       ~exit()~ 把控制权返回主机环境, 如果可能的话, 向主机环境报告终止状态.
+
+       通常, UNIX 程序使用 0 表示成功终止, 用非 0 值表示终止失败. UNIX 返回的代
+       码并不适用于所有的系统, 所以 ANSI C 为了可移植性的要求, 定义了一个名为
+       ~EXIT_FAILURE~ 的宏表示终止失败. 类似地, ANSI C 还定义了 ~EXIT_SUCCESS~
+       表示成功终止. 不过, ~exit()~ 函数也接受 0 表示成功终止. 在 ANSI C 中, 在
+       非递归的 ~main()~ 函数中使用 ~exit()~ 函数等价于使用关键字 ~return~. 尽管
+       如此, 在 ~main()~ 以外的函数中使用 ~exit()~ 也会终止整个程序
+
+*** ~qsort()~ 函数
+    对较大型的数组而言, "快速排序"方法是最有效的排序算法之一. 该算法由
+    C.A.R.Hoare 于 1962 年开发. 它把数组不断分成更小的数组, 直到变成单元素数组.
+    首先, 把数组分成两部分, 一部分的值都小于另一部分的值. 这个过程一直持续到数组
+    完全排序好为止.
+
+    快速排序算法在 C 实现中的名称是 ~qsort()~. ~qsort()~ 函数排序数组的数据对象,
+    原型如下:
+    #+begin_src c
+      void qsoort(void* base, size_t nmemb, size_t size,
+                  int (*compar)(const void*, const void*));
+    #+end_src
+
+    第一个参数是指针, 指向待排序数组的首元素. ANSI C 允许把指向任何数据类型的指
+    针强制转换成指向 void 的指针, 因此, ~qsort()~ 的第一个实际参数可以引用任何类
+    型的数组.
+
+    第二个参数是待排序的数量, 函数原型把该值转换为 ~size_t~ 类型. ~size_t~ 定义
+    在标准头文件中, 是 ~sizeof~ 运算符返回的整数类型
+
+    由于 ~qsort()~ 把第一个参数转换为 void 指针, 所以 ~qsort()~ 不知道数组中每个
+    元素的大小. 为此, 函数原型用第三个参数补偿这一信息, 显式指名待排序数组中每个
+    元素的大小. 
+    eg: 如果排序 double 类型的数组, 那么第三个参数应该是 ~sizeof(double)~.
+
+    最后, ~qsort()~ 还需要一个指向函数的指针, 这个被指针指向的比较函数用于确定排
+    序的顺序. 该函数应接收 2 个参数: 分别指向待比较两项的指针. 如果第一项的值大
+    于第二项, 比较函数则返回正数; 如果相同返回 0, 如果小于返回复数. ~qsort()~ 根
+    据给定的其他信息计算出两个指针的值, 然后把它们传递给比较函数
+
+    ~qsort()~ 原型中的第四个参数确定了比较函数的形式:
+    #+begin_src c
+      int (*compar)(const void*, const void*);
+    #+end_src
+
+    这表明 ~qsort()~ 最后一个参数是一个指向函数的指针, 该函数返回 int 类型的值且
+    接受两个指向 ~const void~ 的指针作为参数, 这两个指针指向待比较项
+
+    ~qsorter.c~ 程序和后面的讨论解释了如何定义一个比较函数, 以及如何使用
+    ~qsort()~. 该程序创建了一个内含随机浮点值的数组, 并排序了这个数组
+
+    分析: ~qsort()~ 的用法和 ~mycomp()~ 的定义
+    1. ~qsort()~ 的用法
+       ~qsort()~ 函数排序数组的数据对象. 该函数的 ANSI 原型如下:
+       #+begin_src c
+         void qsort(void* base, size_t nmemb, size_t size,
+                    int (*compar)(const void* const void*));
+       #+end_src
+
+       第一个参数指向待排序数组首元素的指针, 程序中实参为 double 类型的数组名
+       vals, 因此指针指向该数组的首元素. 根据该函数的原型, 参数 vals 会被强制转
+       换成指向 void 的指针. 由于 ANSI C 允许把指向任何数据类型的指针强制转换成
+       指向 void 的指针, 所以 ~qsort()~ 的第一个实际参数可以引用任何类型的数组
+
+       第二个参数是待排序项的数量, 即数组元素的数量
+
+       第三个参数是数组中每个元素占用的空间大小, 本例为 ~sizeof(double)~
+
+       最后一个参数是 ~mycomp~, 函数名即是函数的地址, 该函数用于比较元素
+
+    2. ~mycomp()~ 的定义
+       ~qsort()~ 的原型规定了该函数返回 int 类型的值并且接受两个指向 ~const
+       void~ 的指针作为参数.
+
+       ~qsort()~ 函数把两个待比较元素的地址传递给比较函数. 
+
+       *注意*: ~qsort()~ 的第一个参数是引用整个数组, 比较函数中的两个参数引用数
+       组中的两个元素. 这里存在一个问题: 为了比较指针所指向的值, 必须解应用指针.
+       因为值是 double 类型, 所以要把指针解引用为 double 类型的值. 然而,
+       ~qsort()~ 要求指针指向 void. 要解决这个问题, *必须在比较函数的内部声明两
+       个类型正确的指针*, 并初始化它们分别指向作为参数传入的值
+
+       为了让该方法更具有通用性, ~qsort()~ 和比较函数使用了指向 void 的指针. 因
+       此, 必须把数组中的每个元素的大小明确告诉 ~qsort()~, 并且在比较函数的定义
+       中, 必须把该函数的指针参数转换为对具体应用而言类型正确的指针.
+
+       *注意*: C 和 C++ 中的 void*
+       C 和 C++ 对待指向 void 的指针有锁不同. 它们都可以把任何类型的指针赋给
+       void 类型的指针. 但是, C++ 要求在把 void* 指针付给任何类型的指针时 *必须
+       进行强制类型转换*, 而 C 没有这样的要求
+       #+begin_src c
+         const double* a1 = (const double*)p1;
+       #+end_src
+
+       这种转换在 C 中可选, C++ 中必须.
+
+       
+    另一个比较函数的例子: 假设如下声明:
+    #+begin_src c
+      struct names
+      {
+        char first[40];
+        char last[40];
+      };
+
+      struct names staff[100];
+    #+end_src
+
+    调用方式:
+    #+begin_src c
+      qsort(staff, 100, sizeof(struct names), comp);
+    #+end_src
+
+    假设要先按姓排序, 再按名排序:
+    #+begin_src c
+      #include <string.h>
+
+      int comp(const void* p1, const void* p2)
+      {
+        const struct names* ps1 = (const struct names*)p1;
+        const struct names* ps2 = (const struct names*)p2;
+
+        int res;
+        res = strcmp(ps1->last, ps2->last); // 姓
+
+        if (res != 0) {
+          return res;
+        } else {
+          // 比较名
+          return strcmp(ps1->first, ps2->first);
+        }
+      }
+    #+end_src
+
+    该指针使用 ~strcmp()~ 函数进行比较. 返回值与函数的要求相匹配
