@@ -1464,3 +1464,32 @@
 
     这样编译器就会 *禁用文件中的所有 ~assert()~ 语句, 如果出现问题可以移除该语句,
     方便调试
+
+*** ~_Static_assert(C11)~
+    ~assert()~ 表达式是在 *运行时* 进行检查. C11 新增了 一个特性: ~_Static_assert~
+    声明, 可以在 *编译时* 检查 ~assert()~ 表达式. 因此, ~assert()~ 可以导致正在
+    运行的 *程序中止*, 而 ~_Static_assert()~ 可以导致程序 *无法通过编译*. 
+
+    ~_Static_assert()~ 接受 2 个参数. 第一个参数是整形常量表达式, 第二个参数是一
+    个字符串. 
+
+    如果第一个表达式求值为 0 (或 ~_False~), 编译器会显示字符串, 而且 *不编译* 该
+    程序.
+
+    ~statasrt.c~ 演示了用法
+
+    MSVC, Clang 编译结果:
+    #+begin_example
+      .\statasrt.c:4:1: error: static_assert failed due to requirement '8 == 16' "16-bit char falsey, assumed"
+      _Static_assert(CHAR_BIT == 16, "16-bit char falsey, assumed");
+      ^              ~~~~~~~~~~~~~~
+      1 error generated.
+    #+end_example
+
+    根据语法, ~_Static_assert()~ 被视为声明. 因此, 它可以出现在函数中, 或者在这
+    种情况下出现在函数逇外部
+
+    ~_Static_assert~ 要求它的第一个参数是 *整形常量表达式*, 这保证了能在编译期求
+    值(~sizeof~ 表达式被视为整形常量). 不能将 ~assert.c~ 中的 ~assert()~ 换为
+    ~_Static_assert~, 因为 ~z > 0~ 不是常量表达式, 运行期才能求值. 可以用
+    ~assert()~ 更换 ~_Static_assert()~, 但在运行期才生成错误信息, 效率低下
