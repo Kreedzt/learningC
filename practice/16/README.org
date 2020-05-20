@@ -1572,7 +1572,7 @@
 
    然后, 该函数将使用定义在 ~stdarg.h~ 中的 ~va_start()~ 宏, 把参数列表拷贝到
    ~va_list~ 类型的变量中. 该宏有两个参数: ~va_list~ 类型的变量和 ~parmN~ 形参.
-   接着上面的例子陶瑞了, ~va_list~ 类型的变量是 ~ap~, ~parmN~ 形参是 ~lim~. 所以,
+   接着上面的例子讨论, ~va_list~ 类型的变量是 ~ap~, ~parmN~ 形参是 ~lim~. 所以,
    应该如下调用:
    #+begin_src c
      va_start(ap, lim); // 把 ap 初始化为参数列表
@@ -1662,3 +1662,11 @@
    12. 见 ~res11.c~
    13. 见 ~res12.c~
    14. 见 ~res13.c~
+** 编程练习
+   1. 见 ~practice1.h~
+   2. 见 ~practice2.c~
+   3. 见 ~practice3.c~
+   4. 见 ~practice4.c~
+   5. 见 ~practice5.c~
+   6. 见 ~practice6.c~
+   7. 见 ~practice7.c~
