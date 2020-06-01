@@ -3,7 +3,12 @@
 #include <stdbool.h>
 
 // 在这里插入Item类型 的定义, eg:
-typedef int Item; // 用于 use_q.c
+/* typedef int Item; // 用于 use_q.c */
+typedef struct item
+{
+  long arrive;
+  int processtime;
+} Item; // 用于 mall.c
 // 或 typedef struct Item{iten gumption; int charisma;} Item;
 #define MAXQUEUE 10
 typedef struct node
