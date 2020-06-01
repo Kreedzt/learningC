@@ -342,3 +342,275 @@
 
    3. 编写代码实现接口. 这一步至关重要, 但是使用该新类型的程序员无需了解具体的实
       现细节.
+** 队列ADT
+   在 C 语言中使用抽象数据类型方法编程包含以下 3 个步骤:
+   1. 以抽象, 通用的方式描述一个类型, 包括该类型的操作
+   2. 设计一个函数接口表示这个新类型
+   3. 编写具体代码实现这个接口
+
+   前面已经把这种方法应用到简单链表中. 现在, 把这种方法应用于更复杂的数据类型:
+   队列.   
+
+*** 定义队列抽象数据类型
+    *队列(queue)是具有两个特殊属性的链表*: 第一: 新项只能添加到链表的末尾. 从这
+     方面看, 队列与简单链表类型. 第二, 只能从链表的开头移除项. 可以把队列想象成
+     排队买票的人. 你从队尾加入队列, 买完票后从对首离开. 队列是一种 *先进先出*
+     (first in, first out, 缩写为 FIFO) 的数据形式, 就像在排队买票的队伍一样(前
+     提是没有人插队). 接下来, 建立一个非正式的抽象定义:
+     
+     #+begin_example
+       类型名: 队列
+       类型属性: 可以储存一系列项
+       类型操作: 初始化队列为空
+       确定队列为空
+       确定队列已满
+       确定队列中的项数
+       在队列末尾添加项
+       在队列开头删除或恢复项
+       清空队列
+     #+end_example
+
+*** 定义一个接口
+    接口定义放在 ~queue.h~ 文件中. 我们使用 C 的 ~typedef~ 工具创建两个类型名:
+    Item 和 Queue. 相应结构的具体实现应该是 ~queue.h~ 文件的一部分, 但是从概念上
+    来看, 应该在实现阶段才设计结构. 现在, 只是假定已经定义了这些类型, 着重考虑函
+    数的原型.
+
+    首先, 考虑初始化. 这涉及改变 Queue 类型, 所以该函数应该以 Queue 的地址作为参
+    数: 
+    #+begin_src c
+      void InitializeQueue(Queue* pq);
+    #+end_src
+
+    接下来, 确定队列是否为空或已满的函数应返回真或假值. 这里, 假设 C99 的
+    ~stdbool.h~ 头文件可用, 如果该文件不可用, 可以使用 ~int~ 类型或自己定义
+    ~bool~ 类型. 由于该函数不更改队列, 所以接受 Queue 类型的参数. 但是, 传递
+    Queue 的地址更快, 更节省内存. 这样做的好处是: 所有的函数都以地址作为参数. 为
+    了表明这些函数不更改队列, 可以且应该使用 ~const~ 限定符:
+    #+begin_src c
+      bool QueueIsFull(const Queue* pq);
+      bool QueueIsEmpty(const Queue* pq);
+    #+end_src
+
+    指针 pq 指向 Queue 数据对象, 不能通过 pq 这个代理更改数据. 可以定义一个类似
+    该函数的原型, 返回队列的项数:
+    #+begin_src c
+      int QueueItemCount(const Queue* pq);
+    #+end_src
+
+    在队列末尾添加项设计标识项和队列. 这次要更改队列, 所以有必要(而不是可选)使用
+    指针. 该函数的返回类型可以是 ~void~, 或者通过返回值来表示是否成功添加项. 我
+    们采用后者:
+    #+begin_src c
+      bool EnQueue(Item item, Queue* pq);
+    #+end_src
+    最后, 删除项有多种方法. 如果把该项定义为结构或一种基本类型, 可以通过函数返回
+    待删除的项. 函数的参数可以是 Queue 类型或指向 Queue 的指针. 因此, 可以是下面
+    这样的原型:
+    #+begin_src c
+      Item DeQueue(Queue q);
+    #+end_src
+
+    然而, 下面的原型会更合适一些:
+    #+begin_src c
+      bool DeQueue(Item* pitem, Queue* pq);
+    #+end_src
+
+    从队列中待删除的项储存在 pitem 指针指向的位置, 函数的返回值表明是否删除成功
+
+    清空队列的函数所需的唯一参数是队列的地址, 可以使用下面的函数原型:
+    #+begin_src c
+      void EmptyTheQueue(Queue* pq);
+    #+end_src
+
+    
+*** 实现接口数据表示
+    第一步是确定在队列中使用何种 C 数据形式. 有可能是数组. 数组的优点是方便使用,
+    而且向数组的末尾添加项很简单. 问题是如果从队列的开头删除项. 类比于排队买票的
+    队列, 从队列的开头删除一个项包括拷贝数组首元素的值和把数组剩余各项依次向前移
+    动一个位置. 编程实现这个过程很简单, 但是会浪费大量的计算机时间.
+
+    第二种解决数组队列删除问题的方法是改变队列首端的位置, 其余元素不动.
+
+    解决这种问题的一个好方法是, 使队列成为环形, 这意味着把数组的首尾相连, 即数组
+    的首元素紧跟在最后一个元素后面. 这样, 当到达数组末尾时, 如果首元素空出, 就可
+    以把新添加的项储存到这些空出的元素中. 可以想象在一张条形的纸上画出数组, 然后
+    把数组的末尾首尾粘起来形成一个环. 当然, 要做一些标记, 以免尾端超过首端.
+
+    另一种方法是使用链表. 使用链表的好处是删除首项时不必移动其余元素, 只需重置头
+    指针指向新的首元素即可. 由于我们已经讨论过链表, 所以采用这个方法. 我们用一个
+    整数队列开始测试:
+    #+begin_src c
+      typedef int Item;
+    #+end_src
+
+    链表由节点组成, 所以, 下一步是定义节点:
+    #+begin_src c
+      typedef struct node
+      {
+        Item item;
+        struct node* next;
+      } Node;
+    #+end_src
+
+    对队列而言, 要保存首尾项, 这可以使用指针来完成. 另外, 可以用一个计数器来记录
+    队列中的项数. 因此, 该结构应由两个指针成员和一个 int 类型的成员构成:
+    #+begin_src c
+       typedef struct queue
+       {
+         Node* front; // 指向队列首项的指针
+         Node* rear; // 指向队列尾项的指针
+         int items; // 队列中的项数
+       } Queue;
+    #+end_src
+
+    注意: Queue 是一个内含 3 个成员的结构, 所以用指向队列的指针作为参数比直接用
+    队列作为参数节约了时间和空间
+
+    接下来, 考虑队列的大小. 对链表而言, 其大小受限于可用的内存量, 因此链表不要太
+    大. eg: 可能使用一个队列模拟飞机等待在机场着陆. 如果等待的飞机数量太多, 新到
+    的飞机就应该改到其他的机场降落. 我们把队列的最大程度设为 10. ~queue.h~ 包含
+    了队列接口的原型和定义. Item 类型留给用户定义. 使用该接口时, 可以根据特定的
+    程序插入合适的定义.
+
+**** 实现接口函数
+     接下来, 我们编写接口代码. 首先, 初始化队列为空, 这里 "空" 的意思是指把指向
+     队列的首项和尾项的指针设置为 ~NULL~, 并把项数(items 成员) 设置为 0:
+     #+begin_src c
+       void InitializeQueue(Queue* pq)
+       {
+         pq->front = pq->rear = NULL;
+         pq->items = 0;
+       }
+     #+end_src
+
+     这样, 通过检查 items 的值可以很方便地了解队列是否已满, 是否为空和确定队列的
+     项数:
+     #+begin_src c
+       bool QueueIsFull(const Queue* pq)
+       {
+         return pq->items == MAXQUEUE;
+       }
+
+       bool QueueIsEmpty(const Queue* pq)
+       {
+         return pq->items == 0;
+       }
+
+       int QueueItemCount(const Queue* pq)
+       {
+         return pq->items;
+       }
+     #+end_src
+
+     把项添加到队列中, 包括以下几个步骤:
+     1. 创建一个新节点
+     2. 把项拷贝到节点中
+     3. 设置节点的 next 指针为 ~NULL~, 表明该节点是最后一个节点
+     4. 设置当前尾节点的 next 指针指向新节点, 把新节点链接到队列中
+     5. 把 rear 指针指向该节点, 以便找到最后的节点
+     6. 项数加 1
+
+        
+     函数还要处理 2 种特殊情况. 第一种情况: 如果队列为空, 应该把 front 指针设置
+     为指向新节点. 因为如果队列中只有一个节点, 那么这个节点既是首节点也是尾节点.
+     第二种情况是: 如果函数不能为新节点分配所需的内存, 则必须执行一些动作. 因为
+     大多数情况下我们都使用小型队列, 这种情况很少发生, 所以, 如果程序运行的内存
+     不足, 我们只是通过函数终止程序.
+
+     ~EnQueue()~ 的代码如下:
+     #+begin_src c
+       bool EnQueue(Item item, Queue* pq)
+       {
+         Node* pnew;
+         if (QueueIsFull(pq))
+           return false;
+
+         pnew = (Node*)malloc(sizeof(Node));
+
+         if (pnew == NULL)
+         {
+           fprintf(stderr, "Unable to allocate memory!\n");
+           exit(1);
+         }
+
+         CopyToNode(item, pnew);
+
+         pnew->next = NULL;
+
+         if (QueueIsEmpty(pq))
+           pq->front = pnew; // 项位于首列顶端
+         else
+           pq->rear->next = pnew; // 记录队列尾端的位置
+         pq->items++; // 队列项数加 1
+
+         return true;
+       }
+     #+end_src
+
+     ~CopyToNode()~ 函数是静态函数, 用于把项拷贝到节点中:
+     #+begin_src c
+       static void CopyToNode(Item item, Node* pn)
+       {
+         pn->item = item;
+       }
+     #+end_src
+
+     从队列的首端删除项, 涉及以下几个步骤:
+     #+begin_src c
+       bool DeQueue(Item* pitem, Queue* pq)
+       {
+         Node* pt;
+
+         if (QueueIsEmpty(pq))
+           return false;
+
+         CopyToItem(pq->front, pitem);
+
+         pt = pq->front;
+         pq->front = pq->front->next;
+         free(pt);
+
+         pq->items--;
+
+         if (pq->items == 0)
+           pq->rear = NULL;
+         return false;
+       }
+     #+end_src
+
+     关于指针要注意两点. 第一, 删除最后一项时, 代码并未显示设置 front 指针为
+     ~NULL~, 因为已经设置 ~front~ 指针指向被删除节点的 next 指针就为 ~NULL~. 第
+     二, 代码使用临时指针(pt) 储存待删除节点的位置. 因为指向首节点的正式指针, 程
+     序就不知道该释放哪块内存.
+
+     我们使用 ~DeQueue()~ 函数清空队列. 循环调用 ~DeQueue()~ 函数直到队列为空: 
+     #+begin_src c
+       void EmptyTheQueue(Queue* pq)
+       {
+         Item dummy;
+         while (!QueueIsEmpty(pq))
+           DeQueue(&dummy. pq);
+       }
+     #+end_src
+
+     注意: *保持纯正* 的 ADT
+
+     定义 ADT 接口后, 应该只使用用接口函数处理数据类型. eg: ~Dequeue()~ 依赖
+     ~EnQueue()~ 函数来正确设置指针和把 ~rear~ 节点的 ~next~ 指针设置为 ~NULL~.
+     如果在一个使用 ADT 的程序中, 决定直接操控队列的某些部分, 有可能破坏接口包中
+     函数直接的协作关系.
+
+     ~queue.c~ 演示了该接口中的所有函数, 包括 ~EnQueue()~ 函数中用到的
+     ~CopyToItem()~ 函数
+
+*** 测试队列
+    在重要的程序中使用一个新的设计(eg: 队列包)之前, 应该先测试该设计. 测试的一种
+    方法是, 编写一个小程序. 这样的程序称为 *驱动程序(driver)*, 其唯一的用途是进
+    行测试. eg: ~use_q.c~ 使用一个添加和删除整数的队列. 在运行该程序之前, 要确保
+    ~queue.h~ 中包含下面这行代码:
+    #+begin_src c
+      typedef int item;
+    #+end_src
+
+    *注意*: *必须连接* ~queue.c~ 和 ~use_q.c~
