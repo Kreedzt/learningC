@@ -37,6 +37,7 @@ int main()
 
   for (cycle = 0; cycle < cyclelimit; cycle++)
   {
+    // 随机是否增加新顾客
     if (newcustomer(min_per_cust))
     {
       if (QueueIsFull(&line))
@@ -49,6 +50,7 @@ int main()
       }
     }
 
+    // 递减分钟完成(<=0)时, 删除队列一项
     if (wait_time <= 0 && !QueueIsEmpty(&line))
     {
       DeQueue(&temp, &line);
@@ -57,8 +59,10 @@ int main()
       served++;
     }
 
+    // 每分钟循环, 每次递减 1 分钟
     if (wait_time > 0)
       wait_time--;
+
     sum_line += QueueItemCount(&line);
   }
 
