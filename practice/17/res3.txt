@@ -1,0 +1,31 @@
+a.          nice
+          /      \
+       dodge     roam
+         \        / \
+         gate office wave
+
+b.            wave
+             /
+          roam
+          /
+        office
+        /
+      nice
+      /
+     gate
+    /
+  dodge
+
+c.                dodge
+                      \
+                      roam
+                      /  \
+                  office  wave
+                  /    \
+                 gate  nice
+
+d.             nice
+            /       \
+          dodge       roam
+              \      /     \
+              gate  office  wave

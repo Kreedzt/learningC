@@ -1,0 +1,33 @@
+a.          nice
+          /      \
+       food      roam
+       / \        / \
+   dodge  gate office wave
+
+b.            wave
+             /
+          roam
+          /
+        office
+        /
+      nice
+      /
+     gate
+     /
+    food
+    /
+  dodge
+
+c.                food
+                  /  \
+               dodge  roam
+                      /  \
+                  office  wave
+                  /    \
+                 gate  nice
+
+d.             nice
+            /       \
+          food       roam
+          /  \      /     \
+       dodge gate  office  wave
