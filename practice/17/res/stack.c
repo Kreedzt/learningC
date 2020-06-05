@@ -38,6 +38,7 @@ void add_stack(char name[20], Stack* init)
 void remove_stack(Stack* init)
 {
   Item* temp = init->content;
+  Item* temp2 = NULL;
 
   if (temp == NULL) {
     printf("No content.\n");
@@ -55,15 +56,20 @@ void remove_stack(Stack* init)
   }
   temp->prev = NULL;
   printf("remove id: %d\n", temp->id);
+  temp2 = temp->next;
   free(temp);
-  temp = NULL;
+  temp = temp2;
   init->count--;
 }
 
 void remove_all(Stack* init)
 {
-  while (init->count != 0) {
-    remove_stack(init);
+  Item* it = init->content;
+  Item* it_save = NULL;
+  while (it) {
+    it_save = it->next;
+    free(it);
+    it = it_save;
   }
 }
 
