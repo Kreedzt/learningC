@@ -1,10 +1,15 @@
 
 typedef struct stack {
+  struct item* content;
+  unsigned int count;
+} Stack;
+
+typedef struct item {
   int id;
   char name[20];
-  struct stack* front;
-  struct stack* next;
-} Stack;
+  struct item* next;
+  struct item* prev;
+} Item;
 
 void initialize_stack(Stack* st);
 
